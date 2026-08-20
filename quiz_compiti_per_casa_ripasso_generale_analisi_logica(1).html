@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compiti per casa / Ripasso generale · Analisi logica</title>
+<style>
+:root{
+  --bg:#f8f7fb;--card:#fff;--text:#1d2939;--muted:#667085;--line:#e4e7ec;
+  --good:#18794e;--goodbg:#eaf7f0;--bad:#b42318;--badbg:#fff0ee;--accent:#5b5bd6;
+  --accentbg:#f0f0ff;--warn:#a15c00;--warnbg:#fff6e8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:auto;padding:20px 14px 54px}
+.top{background:white;border:1px solid var(--line);border-radius:19px;padding:19px 20px;margin-bottom:13px}
+h1{font-size:25px;margin:0 0 6px} .sub{color:var(--muted);font-size:14px;line-height:1.65}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:14px}
+.counter{font-weight:850} .stars{font-size:20px;letter-spacing:2px}
+.progress{height:10px;background:#ececf3;border-radius:999px;overflow:hidden;margin-top:10px}
+.bar{height:100%;background:var(--accent);width:0;transition:.25s}
+.quickwrap{position:sticky;top:0;z-index:20;background:rgba(248,247,251,.96);padding:6px 0 10px;backdrop-filter:blur(8px)}
+.quickbox{background:#fff;border:1px solid var(--line);border-radius:16px;padding:11px}
+.quicktitle{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px;font-weight:800;margin-bottom:9px}
+.quicknav{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}
+.qnum{flex:0 0 38px;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;font-weight:850;cursor:pointer}
+.qnum.current{border-color:var(--accent);box-shadow:0 0 0 2px rgba(91,91,214,.12)}
+.qnum.done{background:var(--goodbg);border-color:var(--good)} .qnum.wrong{background:var(--badbg);border-color:var(--bad)}
+.card{background:white;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 9px 30px rgba(16,24,40,.06)}
+.mode{font-size:14px;font-weight:900;color:var(--accent);margin-bottom:14px}
+.sentence-label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:5px}
+.sentence{font-size:24px;line-height:1.55;font-weight:850;margin-bottom:22px;padding:14px 16px;border-radius:14px;background:#fafaff}
+.ask{font-size:18px;font-weight:800;line-height:1.6;margin-bottom:18px}
+.options{display:grid;gap:14px}
+.option{display:flex;align-items:flex-start;gap:23px;width:100%;border:1.5px solid var(--line);background:#fff;border-radius:15px;padding:17px 20px;text-align:left;cursor:pointer;font-size:17px;line-height:1.58}
+.option:hover{border-color:#b8b8df} .option:disabled{cursor:default}
+.letter{flex:0 0 44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;background:var(--accentbg);font-size:18px}
+.answertext{flex:1;padding-top:7px}
+.option.correct{background:var(--goodbg);border-color:var(--good)} .option.correct .letter{background:var(--good);color:#fff}
+.option.wrong{background:var(--badbg);border-color:var(--bad)} .option.wrong .letter{background:var(--bad);color:#fff}
+.fieldgrid{display:grid;gap:14px}
+.field{display:grid;grid-template-columns:minmax(210px,.9fr) 1.1fr;gap:14px;align-items:center}
+.field label{font-weight:850;line-height:1.4}
+input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:14px 15px;font-size:17px;outline:none}
+input:focus{border-color:var(--accent)} input.good{border-color:var(--good);background:var(--goodbg)} input.bad{border-color:var(--bad);background:var(--badbg)}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button.primary{border:0;background:var(--accent);color:white;border-radius:12px;padding:13px 18px;font-weight:850;font-size:15px;cursor:pointer}
+button.secondary{border:1.5px solid var(--line);background:#fff;color:var(--text);border-radius:12px;padding:13px 18px;font-weight:850;font-size:15px;cursor:pointer}
+button.secondary:disabled{opacity:.45;cursor:default}
+.feedback{display:none;margin-top:18px;border-radius:13px;padding:15px 16px;line-height:1.65}
+.feedback.good{display:block;background:var(--goodbg);color:var(--good)} .feedback.bad{display:block;background:var(--badbg);color:var(--bad)}
+.navbar{display:flex;gap:10px;margin-top:18px} .navbar button{flex:1}
+.note{font-size:13px;color:var(--muted);margin-top:8px;text-align:right}
+.matchhelp{background:var(--warnbg);color:var(--warn);border-radius:12px;padding:11px 13px;margin-bottom:15px;font-size:14px;line-height:1.55}
+.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.matchcol{display:grid;gap:10px;align-content:start}
+.matchhead{font-size:13px;color:var(--muted);font-weight:850;margin-bottom:2px}
+.matchitem{width:100%;border:1.5px solid var(--line);background:#fff;border-radius:13px;padding:14px 15px;text-align:left;line-height:1.45;font-size:16px;cursor:pointer;min-height:54px;transition:.2s}
+.matchitem.selected{border-color:var(--accent);background:var(--accentbg);box-shadow:0 0 0 2px rgba(91,91,214,.1)}
+.matchitem.flashbad{border-color:var(--bad);background:var(--badbg)}
+.matchitem.matched{opacity:0;transform:scale(.94);pointer-events:none}
+.matchstatus{margin-top:13px;color:var(--muted);font-size:14px;font-weight:750}
+.summary{text-align:center;padding:5px 0 10px}
+.summary .big{font-size:68px;font-weight:950;line-height:1;margin:12px 0 8px;color:var(--accent)}
+.summary .outof{font-size:18px;color:var(--muted);margin-bottom:18px}
+.summary .cheer{font-size:30px;font-weight:950;margin:18px 0 8px}
+.summary .teacher{font-size:18px;font-weight:800;line-height:1.6;background:var(--accentbg);border-radius:15px;padding:16px;margin-top:14px}
+.summarygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.stat{border:1px solid var(--line);border-radius:13px;padding:14px 10px;background:#fff}
+.stat b{display:block;font-size:22px;margin-bottom:3px} .stat span{font-size:12px;color:var(--muted)}
+.review{text-align:left;margin-top:20px;display:grid;gap:9px}
+.reviewitem{border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:14px}
+.spark{position:fixed;pointer-events:none;font-size:25px;animation:pop .8s ease-out forwards;z-index:50}
+@keyframes pop{0%{transform:translateY(0) scale(.6);opacity:1}100%{transform:translateY(-70px) scale(1.3);opacity:0}}
+@media(max-width:650px){
+ .card{padding:20px} .sentence{font-size:21px} .field{grid-template-columns:1fr}
+ .option{gap:17px;padding:15px} .letter{flex-basis:40px;height:40px}
+ .matchgrid{grid-template-columns:1fr;gap:14px} .summarygrid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Analisi logica · Compiti per casa / Ripasso generale</h1>
+    <div class="sub">30 esercizi · scelta multipla · riempimento · abbinamenti · analisi completa<br>可以自由跳题，不需要按顺序完成。</div>
+    <div class="row"><div class="counter" id="counter"></div><div class="stars" id="stars">☆ ☆ ☆</div></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+  <div class="quickwrap"><div class="quickbox">
+    <div class="quicktitle"><span>快速浏览 · 点题号直接跳转</span><span id="doneCount">已完成 0</span></div>
+    <div class="quicknav" id="quicknav"></div>
+  </div></div>
+  <main class="card" id="card"></main>
+</div>
+<script>
+const questions=[{"type": "choice", "topic": "1 · Soggetto, predicato e oggetto", "prompt": "Marco legge un libro.", "question": "Qual è il complemento oggetto?", "options": ["Marco", "legge", "un libro", "nessun complemento oggetto"], "correct": 2, "explanation": "“Marco” è il soggetto, “legge” è il predicato verbale e “un libro” è il complemento oggetto."}, {"type": "multifill", "topic": "2 · Analisi base", "prompt": "Gli studenti svolgono gli esercizi.", "question": "Completa i tre elementi principali.", "fields": [{"label": "Soggetto", "answers": ["Gli studenti", "gli studenti"]}, {"label": "Predicato verbale", "answers": ["svolgono"]}, {"label": "Complemento oggetto", "answers": ["gli esercizi"]}], "explanation": "Chi compie l’azione? Gli studenti. Che cosa fanno? svolgono. Che cosa svolgono? gli esercizi."}, {"type": "choice", "topic": "3 · Complemento di termine", "prompt": "La professoressa spiega la grammatica agli studenti.", "question": "Qual è il complemento di termine?", "options": ["La professoressa", "la grammatica", "agli studenti", "spiega"], "correct": 2, "explanation": "Il complemento di termine risponde a “a chi? / a che cosa?”: agli studenti."}, {"type": "fill", "topic": "4 · Complemento di specificazione", "prompt": "Il libro di Marco è sul tavolo.", "question": "Scrivi il complemento di specificazione.", "answers": ["di Marco"], "inputLabel": "Complemento di specificazione", "explanation": "“di Marco” risponde a “di chi?” e specifica a chi appartiene il libro."}, {"type": "choice", "topic": "5 · Complemento di denominazione", "prompt": "La città di Roma è molto grande.", "question": "“di Roma” è:", "options": ["Complemento di specificazione", "Complemento di denominazione", "Complemento partitivo", "Complemento di moto da luogo"], "correct": 1, "explanation": "“città” è un nome generico e “Roma” ne dà la denominazione."}, {"type": "choice", "topic": "6 · Complemento partitivo", "prompt": "Uno dei ragazzi parla inglese.", "question": "“dei ragazzi” è:", "options": ["Complemento partitivo", "Complemento di specificazione", "Complemento di termine", "Complemento di compagnia"], "correct": 0, "explanation": "“Uno” è preso da un insieme: uno tra i ragazzi. Per questo “dei ragazzi” è complemento partitivo."}, {"type": "match", "topic": "7 · Gioco degli abbinamenti · Luogo", "prompt": "Abbina ogni espressione al complemento di luogo corretto.", "question": "Tocca un elemento a sinistra e poi quello giusto a destra. Se tocchi di nuovo lo stesso elemento, lo deselezioni.", "pairs": [{"key": "p1", "left": "in biblioteca", "right": "Complemento di stato in luogo"}, {"key": "p2", "left": "a scuola", "right": "Complemento di moto a luogo"}, {"key": "p3", "left": "dalla stazione", "right": "Complemento di moto da luogo"}, {"key": "p4", "left": "per il centro", "right": "Complemento di moto per luogo"}], "explanation": "Ricorda le domande: dove? / verso dove? / da dove? / per dove?"}, {"type": "choice", "topic": "8 · Stato in luogo", "prompt": "Anna è in classe.", "question": "“in classe” indica:", "options": ["Complemento di stato in luogo", "Complemento di moto a luogo", "Complemento di moto da luogo", "Complemento di modo"], "correct": 0, "explanation": "Anna si trova in un posto: “in classe” risponde a “dove?”."}, {"type": "fill", "topic": "9 · Moto a luogo", "prompt": "Domani andremo in biblioteca.", "question": "Scrivi il nome completo del complemento “in biblioteca”.", "answers": ["Complemento di moto a luogo", "moto a luogo"], "inputLabel": "Nome del complemento", "explanation": "Andremo verso un luogo: “in biblioteca” è complemento di moto a luogo."}, {"type": "choice", "topic": "10 · Moto da luogo", "prompt": "I bambini escono dal giardino.", "question": "“dal giardino” è:", "options": ["Complemento di stato in luogo", "Complemento di moto a luogo", "Complemento di moto da luogo", "Complemento di origine / provenienza"], "correct": 2, "explanation": "Escono da dove? Dal giardino: movimento da un luogo."}, {"type": "fill", "topic": "11 · Moto per luogo", "prompt": "Il treno passa per Bologna.", "question": "Scrivi il nome completo del complemento “per Bologna”.", "answers": ["Complemento di moto per luogo", "moto per luogo"], "inputLabel": "Nome del complemento", "explanation": "Il treno passa attraverso un luogo: complemento di moto per luogo."}, {"type": "match", "topic": "12 · Gioco degli abbinamenti · Tempo e altri complementi", "prompt": "Abbina ogni espressione al complemento corretto.", "question": "Ogni coppia corretta scompare insieme.", "pairs": [{"key": "p1", "left": "Domani", "right": "Complemento di tempo determinato"}, {"key": "p2", "left": "per due ore", "right": "Complemento di tempo continuato"}, {"key": "p3", "left": "con la penna", "right": "Complemento di mezzo / strumento"}, {"key": "p4", "left": "con Luca", "right": "Complemento di compagnia"}], "explanation": "“Quando?” indica tempo determinato; “per quanto tempo?” indica tempo continuato."}, {"type": "choice", "topic": "13 · Mezzo / strumento", "prompt": "Vado a scuola in autobus.", "question": "“in autobus” è:", "options": ["Complemento di modo", "Complemento di mezzo / strumento", "Complemento di compagnia", "Complemento di stato in luogo"], "correct": 1, "explanation": "L’autobus è il mezzo usato per andare a scuola."}, {"type": "fill", "topic": "14 · Causa", "prompt": "Non siamo usciti per la pioggia.", "question": "Scrivi il complemento di causa presente nella frase.", "answers": ["per la pioggia"], "inputLabel": "Complemento di causa", "explanation": "Perché non siamo usciti? Per la pioggia."}, {"type": "choice", "topic": "15 · Compagnia", "prompt": "Marta studia con sua sorella.", "question": "“con sua sorella” è:", "options": ["Complemento di compagnia", "Complemento di mezzo / strumento", "Complemento di modo", "Complemento di termine"], "correct": 0, "explanation": "Risponde a “con chi?”: con sua sorella."}, {"type": "fill", "topic": "16 · Modo", "prompt": "Anna risponde con gentilezza.", "question": "Scrivi il complemento di modo.", "answers": ["con gentilezza"], "inputLabel": "Complemento di modo", "explanation": "Risponde alla domanda “come? / in che modo?”: con gentilezza."}, {"type": "match", "topic": "17 · Gioco degli abbinamenti · Agente o causa efficiente", "prompt": "Abbina la frase all’elemento che compie o provoca l’azione.", "question": "Persona = complemento d’agente. Cosa o fenomeno = complemento di causa efficiente.", "pairs": [{"key": "p1", "left": "Il libro è stato scritto da Dante.", "right": "da Dante · complemento d’agente"}, {"key": "p2", "left": "La porta è stata aperta da Marco.", "right": "da Marco · complemento d’agente"}, {"key": "p3", "left": "La strada è stata bloccata dalla neve.", "right": "dalla neve · complemento di causa efficiente"}, {"key": "p4", "left": "Gli alberi sono stati abbattuti dal vento.", "right": "dal vento · complemento di causa efficiente"}], "explanation": "Nella forma passiva: “da chi?” → agente; “da che cosa?” → causa efficiente."}, {"type": "choice", "topic": "18 · Origine / provenienza", "prompt": "Questo vino proviene dalla Toscana.", "question": "“dalla Toscana” è:", "options": ["Complemento di moto da luogo", "Complemento di origine / provenienza", "Complemento di specificazione", "Complemento di causa"], "correct": 1, "explanation": "Con “proviene” si indica l’origine del vino: complemento di origine / provenienza."}, {"type": "match", "topic": "19 · Gioco degli abbinamenti · Predicato verbale o nominale", "prompt": "Abbina ogni frase alla sua analisi del predicato.", "question": "Leggi bene: con essere + nome/aggettivo abbiamo spesso un predicato nominale.", "pairs": [{"key": "p1", "left": "Marco corre.", "right": "corre · predicato verbale"}, {"key": "p2", "left": "Anna è stanca.", "right": "è stanca · predicato nominale"}, {"key": "p3", "left": "Luca studia.", "right": "studia · predicato verbale"}, {"key": "p4", "left": "Marta è una studentessa.", "right": "è una studentessa · predicato nominale"}, {"key": "p5", "left": "Paolo ha mangiato.", "right": "ha mangiato · predicato verbale"}, {"key": "p6", "left": "Roma è una città antica.", "right": "è una città antica · predicato nominale"}], "explanation": "Il predicato verbale esprime un’azione o un fatto; il predicato nominale dice che cos’è o com’è il soggetto."}, {"type": "choice", "topic": "20 · Specificazione o denominazione?", "prompt": "La porta della scuola è aperta. / La città di Milano è in Lombardia.", "question": "Quale analisi è corretta?", "options": ["“della scuola” = denominazione; “di Milano” = specificazione", "“della scuola” = specificazione; “di Milano” = denominazione", "Entrambi sono complementi partitivi", "Entrambi sono complementi di termine"], "correct": 1, "explanation": "“della scuola” specifica quale porta; “Milano” denomina la città."}, {"type": "choice", "topic": "21 · Partitivo o specificazione?", "prompt": "Tre dei miei amici vivono a Roma.", "question": "“dei miei amici” è:", "options": ["Complemento di specificazione", "Complemento partitivo", "Complemento di denominazione", "Complemento oggetto"], "correct": 1, "explanation": "Tre persone sono scelte all’interno del gruppo dei miei amici: complemento partitivo."}, {"type": "multifill", "topic": "22 · Analisi completa mista", "prompt": "Domani Marco porterà il libro a Luca.", "question": "Trova tutti gli elementi richiesti.", "fields": [{"label": "Complemento di tempo determinato", "answers": ["Domani", "domani"]}, {"label": "Soggetto", "answers": ["Marco"]}, {"label": "Predicato verbale", "answers": ["porterà"]}, {"label": "Complemento oggetto", "answers": ["il libro"]}, {"label": "Complemento di termine", "answers": ["a Luca", "a luca"]}], "explanation": "Domani = quando; Marco = chi; porterà = azione; il libro = che cosa; a Luca = a chi."}, {"type": "multifill", "topic": "23 · Analisi completa mista", "prompt": "Il gatto di Anna dorme sul divano.", "question": "Completa l’analisi.", "fields": [{"label": "Soggetto", "answers": ["Il gatto", "il gatto"]}, {"label": "Complemento di specificazione", "answers": ["di Anna", "di anna"]}, {"label": "Predicato verbale", "answers": ["dorme"]}, {"label": "Complemento di stato in luogo", "answers": ["sul divano"]}], "explanation": "Il gatto è il soggetto; di Anna specifica; dorme è il predicato; sul divano indica dove."}, {"type": "multifill", "topic": "24 · Analisi completa mista", "prompt": "Marta è andata al cinema con sua sorella.", "question": "Completa l’analisi.", "fields": [{"label": "Soggetto", "answers": ["Marta"]}, {"label": "Predicato verbale", "answers": ["è andata"]}, {"label": "Complemento di moto a luogo", "answers": ["al cinema"]}, {"label": "Complemento di compagnia", "answers": ["con sua sorella"]}], "explanation": "Marta compie l’azione; va verso il cinema ed è insieme a sua sorella."}, {"type": "multifill", "topic": "25 · Analisi completa mista", "prompt": "Il treno proveniente da Milano passerà per Bologna.", "question": "Completa l’analisi richiesta.", "fields": [{"label": "Soggetto", "answers": ["Il treno", "il treno"]}, {"label": "Predicato verbale", "answers": ["passerà"]}, {"label": "Complemento di origine / provenienza", "answers": ["da Milano", "da milano"]}, {"label": "Complemento di moto per luogo", "answers": ["per Bologna", "per bologna"]}], "explanation": "Da Milano indica la provenienza; per Bologna indica il luogo attraversato."}, {"type": "multifill", "topic": "26 · Analisi completa mista", "prompt": "La strada è stata bloccata dalla neve per tre ore.", "question": "Completa l’analisi.", "fields": [{"label": "Soggetto", "answers": ["La strada", "la strada"]}, {"label": "Predicato verbale", "answers": ["è stata bloccata"]}, {"label": "Complemento di causa efficiente", "answers": ["dalla neve"]}, {"label": "Complemento di tempo continuato", "answers": ["per tre ore"]}], "explanation": "La neve è una cosa/fenomeno, quindi è causa efficiente; per tre ore indica durata."}, {"type": "multifill", "topic": "27 · Analisi completa mista", "prompt": "Gli studenti lavorano in classe con attenzione.", "question": "Completa l’analisi.", "fields": [{"label": "Soggetto", "answers": ["Gli studenti", "gli studenti"]}, {"label": "Predicato verbale", "answers": ["lavorano"]}, {"label": "Complemento di stato in luogo", "answers": ["in classe"]}, {"label": "Complemento di modo", "answers": ["con attenzione"]}], "explanation": "In classe = dove; con attenzione = come."}, {"type": "multifill", "topic": "28 · Analisi completa mista", "prompt": "Uno dei ragazzi ha dato il quaderno alla professoressa.", "question": "Completa l’analisi.", "fields": [{"label": "Soggetto", "answers": ["Uno", "uno"]}, {"label": "Complemento partitivo", "answers": ["dei ragazzi"]}, {"label": "Predicato verbale", "answers": ["ha dato"]}, {"label": "Complemento oggetto", "answers": ["il quaderno"]}, {"label": "Complemento di termine", "answers": ["alla professoressa"]}], "explanation": "Uno è il soggetto; dei ragazzi indica il gruppo da cui è preso; il quaderno è l’oggetto; alla professoressa è il termine."}, {"type": "multifill", "topic": "29 · Analisi completa mista", "prompt": "La città di Roma è famosa.", "question": "Completa l’analisi.", "fields": [{"label": "Soggetto", "answers": ["La città", "la città"]}, {"label": "Complemento di denominazione", "answers": ["di Roma", "di roma"]}, {"label": "Predicato nominale", "answers": ["è famosa"]}], "explanation": "Roma denomina la città; “è famosa” dice com’è il soggetto, quindi è predicato nominale."}, {"type": "multifill", "topic": "30 · Sfida finale", "prompt": "Marco va a scuola in autobus ogni giorno.", "question": "Completa tutta l’analisi richiesta.", "fields": [{"label": "Soggetto", "answers": ["Marco"]}, {"label": "Predicato verbale", "answers": ["va"]}, {"label": "Complemento di moto a luogo", "answers": ["a scuola"]}, {"label": "Complemento di mezzo / strumento", "answers": ["in autobus"]}, {"label": "Complemento di tempo determinato", "answers": ["ogni giorno"]}], "explanation": "Marco = soggetto; va = predicato; a scuola = verso dove; in autobus = con quale mezzo; ogni giorno = quando."}];
+let i=0, streak=0, summaryShown=false;
+const state=questions.map(q=>({
+  answered:false, score:0, max:q.type==='match'?q.pairs.length:(q.type==='multifill'?q.fields.length:1),
+  value:null, values:null, matched:[], selected:null
+}));
+const card=document.getElementById('card'),counter=document.getElementById('counter'),bar=document.getElementById('bar'),stars=document.getElementById('stars'),quicknav=document.getElementById('quicknav'),doneCount=document.getElementById('doneCount');
+
+function norm(s){
+  return String(s||'').trim().toLowerCase().replace(/[’‘]/g,"'").replace(/\s+/g," ").replace(/[。.!！?？;；:：]+$/,"");
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function doneNow(){return state.filter(x=>x.answered).length}
+function totalMax(){return state.reduce((a,s)=>a+s.max,0)}
+function totalScore(){return state.reduce((a,s)=>a+s.score,0)}
+function percent(){return Math.round(totalScore()/totalMax()*100)}
+function starView(){stars.textContent=streak>=3?'★ ★ ★':streak===2?'★ ★ ☆':streak===1?'★ ☆ ☆':'☆ ☆ ☆'}
+function celebrate(){
+  const chars=['⭐','✨','🌟'];
+  for(let k=0;k<7;k++){
+    const d=document.createElement('div');d.className='spark';d.textContent=chars[k%chars.length];
+    d.style.left=(42+Math.random()*22)+'vw';d.style.top=(40+Math.random()*14)+'vh';
+    document.body.appendChild(d);setTimeout(()=>d.remove(),850);
+  }
+}
+function renderQuick(){
+  quicknav.innerHTML=questions.map((_,idx)=>{
+    const s=state[idx],cls=['qnum'];
+    if(idx===i)cls.push('current');
+    if(s.answered)cls.push(s.score===s.max?'done':'wrong');
+    return `<button class="${cls.join(' ')}" data-jump="${idx}">${idx+1}</button>`;
+  }).join('');
+  quicknav.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>goTo(+b.dataset.jump)));
+  doneCount.textContent=`已完成 ${doneNow()} / ${questions.length}`;
+  bar.style.width=`${(doneNow()/questions.length)*100}%`;
+  const cur=quicknav.querySelector(`[data-jump="${i}"]`);
+  if(cur)cur.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+function saveDraft(){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  if(q.type==='fill'){const inp=document.getElementById('single');if(inp)s.value=inp.value}
+  else if(q.type==='multifill'){const ins=[...card.querySelectorAll('input[data-field]')];if(ins.length)s.values=ins.map(x=>x.value)}
+}
+function goTo(idx){if(idx<0||idx>=questions.length)return;saveDraft();i=idx;summaryShown=false;render()}
+function feedback(ok,text){
+  const fb=document.getElementById('fb');if(!fb)return;
+  fb.className='feedback '+(ok?'good':'bad');
+  fb.innerHTML=`<strong>${ok?'✓ 太棒了！':'✗ 再看一眼'}</strong><br>${text}`;
+}
+function completeCurrent(score){
+  const s=state[i];
+  if(!s.answered){
+    s.answered=true;s.score=score;
+    const ok=score===s.max;
+    streak=ok?streak+1:0;starView();if(ok)celebrate();
+  }
+  renderQuick();
+  if(doneNow()===questions.length&&!summaryShown){summaryShown=true;setTimeout(showSummary,650)}
+}
+function render(){
+  const q=questions[i],s=state[i];
+  counter.textContent=`第 ${i+1} 题 / 共 ${questions.length} 题`;
+  let body=`<div class="mode">${q.topic}</div><div class="sentence-label">Frase / materiale</div><div class="sentence">${q.prompt}</div><div class="ask">${q.question}</div>`;
+
+  if(q.type==='choice'){
+    body+=`<div class="options">`+q.options.map((o,idx)=>`<button class="option" data-idx="${idx}"><span class="letter">${String.fromCharCode(65+idx)}</span><span class="answertext">${o}</span></button>`).join('')+`</div>`;
+  } else if(q.type==='fill'){
+    body+=`<div class="fieldgrid"><div class="field"><label>${q.inputLabel}</label><input id="single" autocomplete="off" placeholder="在这里写答案"></div></div><div class="actions"><button class="primary" id="check">检查答案</button></div>`;
+  } else if(q.type==='multifill'){
+    body+=`<div class="fieldgrid">`+q.fields.map((f,idx)=>`<div class="field"><label>${f.label}</label><input data-field="${idx}" autocomplete="off" placeholder="写在这里"></div>`).join('')+`</div><div class="actions"><button class="primary" id="check">全部检查</button></div>`;
+  } else if(q.type==='match'){
+    body+=`<div class="matchhelp">先点左边或右边的一个选项，再点另一边对应的选项。配对正确后，两项会一起消失；如果还不确定，再点一次已选中的项目即可取消选择。</div><div class="matchgrid"><div class="matchcol"><div class="matchhead">左边</div><div id="leftCol"></div></div><div class="matchcol"><div class="matchhead">右边</div><div id="rightCol"></div></div></div><div class="matchstatus" id="matchStatus"></div>`;
+  }
+  body+=`<div class="feedback" id="fb"></div><div class="navbar"><button class="secondary" id="prev" ${i===0?'disabled':''}>← 上一题</button><button class="secondary" id="next" ${i===questions.length-1?'disabled':''}>下一题 →</button></div><div class="note">不用做完当前题，也可以自由跳到其他练习。</div>`;
+  card.innerHTML=body;
+
+  document.getElementById('prev').addEventListener('click',()=>goTo(i-1));
+  document.getElementById('next').addEventListener('click',()=>goTo(i+1));
+
+  if(q.type==='choice') card.querySelectorAll('.option').forEach(b=>b.addEventListener('click',()=>answerChoice(+b.dataset.idx)));
+  if(q.type==='fill'||q.type==='multifill'){
+    document.getElementById('check').addEventListener('click',answerInput);
+    card.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')answerInput()}));
+  }
+  if(q.type==='match') renderMatch();
+  restore();
+  renderQuick();
+}
+function restore(){
+  const q=questions[i],s=state[i];
+  if(q.type==='choice'&&s.answered){
+    const bs=[...card.querySelectorAll('.option')];
+    bs.forEach((b,j)=>{b.disabled=true;if(j===q.correct)b.classList.add('correct')});
+    if(s.value!==q.correct)bs[s.value]?.classList.add('wrong');
+    feedback(s.score===s.max,q.explanation);
+  }
+  if(q.type==='fill'){
+    const inp=document.getElementById('single');if(s.value)inp.value=s.value;
+    if(s.answered){inp.disabled=true;inp.classList.add(s.score===1?'good':'bad');document.getElementById('check').disabled=true;feedback(s.score===1,q.explanation+(s.score===1?'':`<br><b>参考答案：</b>${q.answers[0]}`))}
+  }
+  if(q.type==='multifill'){
+    const ins=[...card.querySelectorAll('input[data-field]')];if(s.values)ins.forEach((x,j)=>x.value=s.values[j]||'');
+    if(s.answered){
+      ins.forEach((x,j)=>{const ok=q.fields[j].answers.some(a=>norm(a)===norm(x.value));x.disabled=true;x.classList.add(ok?'good':'bad')});
+      document.getElementById('check').disabled=true;
+      const corr=q.fields.map(f=>`${f.label} = ${f.answers[0]}`);
+      feedback(s.score===s.max,q.explanation+(s.score===s.max?'':`<br><b>参考：</b><br>${corr.join('<br>')}`));
+    }
+  }
+  if(q.type==='match'&&s.answered) feedback(true,q.explanation);
+  const first=card.querySelector('input:not(:disabled)');if(first&&!s.answered)setTimeout(()=>first.focus(),40);
+}
+function answerChoice(idx){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  s.value=idx;completeCurrent(idx===q.correct?1:0);render();
+}
+function answerInput(){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  if(q.type==='fill'){
+    const inp=document.getElementById('single');if(!inp.value.trim())return;
+    s.value=inp.value;completeCurrent(q.answers.some(a=>norm(a)===norm(inp.value))?1:0);render();
+  } else {
+    const ins=[...card.querySelectorAll('input[data-field]')];if(ins.some(x=>!x.value.trim()))return;
+    s.values=ins.map(x=>x.value);let pts=0;
+    ins.forEach((x,j)=>{if(q.fields[j].answers.some(a=>norm(a)===norm(x.value)))pts++});
+    completeCurrent(pts);render();
+  }
+}
+function renderMatch(){
+  const q=questions[i],s=state[i];
+  const left=document.getElementById('leftCol'),right=document.getElementById('rightCol');
+  if(!left||!right)return;
+  const matched=new Set(s.matched);
+  const leftItems=q.pairs.map((p,idx)=>({idx,key:p.key,text:p.left}));
+  const rightItems=q.pairs.map((p,idx)=>({idx,key:p.key,text:p.right}));
+  // deterministic mixed order on the right
+  const order=rightItems.length===4?[2,0,3,1]:rightItems.length===6?[3,0,5,2,1,4]:rightItems.map((_,x)=>x).reverse();
+  function button(item,side){
+    if(matched.has(item.key))return '';
+    const sel=s.selected&&s.selected.side===side&&s.selected.idx===item.idx?' selected':'';
+    return `<button class="matchitem${sel}" data-side="${side}" data-idx="${item.idx}">${item.text}</button>`;
+  }
+  left.innerHTML=leftItems.map(x=>button(x,'left')).join('');
+  right.innerHTML=order.map(k=>button(rightItems[k],'right')).join('');
+  document.getElementById('matchStatus').textContent=`已配对 ${s.matched.length} / ${q.pairs.length}`;
+  card.querySelectorAll('.matchitem').forEach(b=>b.addEventListener('click',()=>matchClick(b)));
+}
+function matchClick(btn){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  const side=btn.dataset.side,idx=+btn.dataset.idx;
+  if(s.selected&&s.selected.side===side&&s.selected.idx===idx){s.selected=null;renderMatch();return}
+  if(!s.selected||s.selected.side===side){s.selected={side,idx};renderMatch();return}
+  const first=s.selected;
+  const lidx=side==='left'?idx:first.idx;
+  const ridx=side==='right'?idx:first.idx;
+  const leftPair=q.pairs[lidx],rightPair=q.pairs[ridx];
+  if(leftPair.key===rightPair.key){
+    const currentBtns=[...card.querySelectorAll('.matchitem')].filter(x=>{const si=x.dataset.side,ii=+x.dataset.idx;return (si===side&&ii===idx)||(si===first.side&&ii===first.idx)});
+    currentBtns.forEach(x=>x.classList.add('matched'));
+    s.matched.push(leftPair.key);s.selected=null;s.score=s.matched.length;
+    setTimeout(()=>{
+      if(s.matched.length===q.pairs.length){completeCurrent(q.pairs.length);feedback(true,q.explanation)}
+      renderMatch();renderQuick();
+    },260);
+  } else {
+    const currentBtns=[...card.querySelectorAll('.matchitem')].filter(x=>{const si=x.dataset.side,ii=+x.dataset.idx;return (si===side&&ii===idx)||(si===first.side&&ii===first.idx)});
+    currentBtns.forEach(x=>x.classList.add('flashbad'));s.selected=null;
+    setTimeout(renderMatch,500);
+  }
+}
+function showSummary(){
+  saveDraft();
+  const p=percent(),bad=state.map((s,idx)=>({s,idx})).filter(x=>x.s.score<x.s.max);
+  counter.textContent='全部完成 · 总结';
+  bar.style.width='100%';
+  quicknav.querySelectorAll('.qnum').forEach(b=>b.classList.remove('current'));
+  card.innerHTML=`<div class="summary">
+    <div class="mode">Compiti per casa / Ripasso generale · 完成</div>
+    <div class="big">${p}</div>
+    <div class="outof">总分 / 100</div>
+    <div class="summarygrid">
+      <div class="stat"><b>${questions.length} / ${questions.length}</b><span>练习已完成</span></div>
+      <div class="stat"><b>${totalScore()} / ${totalMax()}</b><span>小项目答对</span></div>
+      <div class="stat"><b>21</b><span>知识点已覆盖</span></div>
+    </div>
+    <div class="cheer">真棒！ ⭐</div>
+    <div class="teacher">记得要发这个结尾截屏给自己的老师哦。</div>
+    ${bad.length?`<div class="review"><h3>可以再看一看的练习</h3>${bad.map(x=>`<div class="reviewitem"><b>第 ${x.idx+1} 题</b> · 得分 ${x.s.score} / ${x.s.max} · ${questions[x.idx].topic}</div>`).join('')}</div>`:'<p style="margin-top:20px;font-weight:850">全部项目都答对了！</p>'}
+    <div class="actions" style="justify-content:center;margin-top:24px"><button class="secondary" id="backQ">返回题目</button><button class="primary" id="restart">重新做一遍</button></div>
+  </div>`;
+  document.getElementById('backQ').addEventListener('click',()=>{summaryShown=false;render()});
+  document.getElementById('restart').addEventListener('click',()=>location.reload());
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
+  if(e.key==='ArrowLeft')goTo(i-1);if(e.key==='ArrowRight')goTo(i+1);
+});
+render();
+</script>
+</body></html>
