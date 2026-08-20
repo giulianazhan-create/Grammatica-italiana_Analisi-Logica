@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Imperativo · 儿童趣味闯关</title>
+<style>
+:root {
+  --bg:#f8f7fb; --card:#fff; --text:#1d2939; --muted:#667085; --line:#e4e7ec;
+  --good:#18794e; --goodbg:#eaf7f0; --bad:#b42318; --badbg:#fff0ee; --accent:#5b5bd6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:860px;margin:auto;padding:22px 14px 50px}
+.top{background:white;border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:14px}
+h1{font-size:24px;margin:0 0 6px} .sub{color:var(--muted);font-size:14px;line-height:1.65}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:14px}
+.counter{font-weight:850} .stars{font-size:21px;letter-spacing:2px}
+.progress{height:10px;background:#ececf3;border-radius:999px;overflow:hidden}
+.bar{height:100%;background:var(--accent);width:0;transition:.25s}
+.quicknav-wrap{margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}
+.quicknav-title{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:13px;color:var(--muted);font-weight:800}
+.quicknav{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.qnum{flex:0 0 38px;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;font-weight:850;cursor:pointer}
+.qnum.current{border-color:var(--accent);box-shadow:0 0 0 2px rgba(91,91,214,.12)}
+.qnum.done{background:var(--goodbg);border-color:var(--good)} .qnum.wrong{background:var(--badbg);border-color:var(--bad)}
+.card{background:white;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 9px 30px rgba(16,24,40,.06)}
+.mode{font-size:14px;font-weight:900;color:var(--accent);margin-bottom:14px}
+.sentence-label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:5px}
+.sentence{font-size:25px;line-height:1.55;font-weight:850;margin-bottom:24px;padding:14px 16px;border-radius:14px;background:#fafaff}
+.ask{font-size:18px;font-weight:800;line-height:1.65;margin-bottom:18px}
+.note{font-size:14px;color:var(--muted);margin:-6px 0 16px;line-height:1.5}
+.options{display:grid;gap:14px}
+.option{display:flex;align-items:flex-start;gap:24px;width:100%;border:1.5px solid var(--line);background:white;border-radius:15px;padding:17px 20px;text-align:left;cursor:pointer;font-size:17px;line-height:1.6}
+.option:hover{border-color:#b8b8df} .option:disabled{cursor:default}
+.letter{flex:0 0 44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;background:#f0f0fb;font-size:18px}
+.answertext{flex:1;padding-top:7px}
+.option.correct{background:var(--goodbg);border-color:var(--good)} .option.correct .letter{background:var(--good);color:#fff}
+.option.wrong{background:var(--badbg);border-color:var(--bad)} .option.wrong .letter{background:var(--bad);color:#fff}
+.fieldgrid{display:grid;gap:14px}
+.field{display:grid;grid-template-columns:minmax(190px,.8fr) 1.2fr;gap:14px;align-items:center}
+.field label{font-weight:850;line-height:1.4}
+input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:14px 15px;font-size:17px;outline:none}
+input:focus{border-color:var(--accent)} input.good{border-color:var(--good);background:var(--goodbg)} input.bad{border-color:var(--bad);background:var(--badbg)}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button.primary{border:0;background:var(--accent);color:white;border-radius:12px;padding:13px 18px;font-weight:850;font-size:15px;cursor:pointer}
+button.secondary{border:1.5px solid var(--line);background:#fff;color:var(--text);border-radius:12px;padding:13px 18px;font-weight:850;font-size:15px;cursor:pointer}
+button.secondary:disabled{opacity:.45;cursor:default}
+.feedback{display:none;margin-top:18px;border-radius:13px;padding:15px 16px;line-height:1.65}
+.feedback.good{display:block;background:var(--goodbg);color:var(--good)} .feedback.bad{display:block;background:var(--badbg);color:var(--bad)}
+.navbar{display:flex;gap:10px;margin-top:18px} .navbar button{flex:1}
+.progress-note{font-size:13px;color:var(--muted);margin-top:8px;text-align:right}
+.result{text-align:center} .score{font-size:54px;font-weight:900;margin:8px 0}
+.review{display:grid;gap:12px;margin-top:24px;text-align:left} .reviewitem{border:1px solid var(--line);border-radius:12px;padding:14px}
+.spark{position:fixed;pointer-events:none;font-size:26px;animation:pop .8s ease-out forwards}
+@keyframes pop{0%{transform:translateY(0) scale(.6);opacity:1}100%{transform:translateY(-70px) scale(1.3);opacity:0}}
+@media(max-width:620px){
+  .card{padding:20px} .sentence{font-size:21px} .field{grid-template-columns:1fr}
+  .option{gap:18px} .letter{flex-basis:40px;height:40px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Imperativo · 儿童趣味闯关</h1>
+    <div class="sub">tu / voi / noi / Lei + 常见反身和不规则形式；用小任务慢慢加难。</div>
+    <div class="row"><div class="counter" id="counter"></div><div class="stars" id="stars">☆ ☆ ☆</div></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+  <div class="quicknav-wrap">
+    <div class="quicknav-title"><span>快速浏览 · 点题号直接跳转</span><span id="doneCount">已答 0</span></div>
+    <div class="quicknav" id="quicknav"></div>
+  </div>
+  <main class="card" id="card"></main>
+</div>
+<script>
+const questions=[{"type": "choice", "topic": "热身 · 命令式是什么？", "prompt": "Parla piano!", "question": "这句话最像什么？", "options": ["命令 / 请求", "描述过去", "描述将来", "比较两个东西"], "correct": 0, "explanation": "Imperativo 用来命令、邀请、请求或给建议。"}, {"type": "fill", "topic": "tu · -are", "prompt": "(tu) parlare → □!", "question": "填肯定命令式。", "answers": ["parla"], "inputLabel": "Imperativo", "explanation": "parlare → tu parla。"}, {"type": "fill", "topic": "tu · -ere", "prompt": "(tu) prendere → □!", "question": "填肯定命令式。", "answers": ["prendi"], "inputLabel": "Imperativo", "explanation": "prendere → tu prendi。"}, {"type": "fill", "topic": "tu · -ire", "prompt": "(tu) dormire → □!", "question": "填肯定命令式。", "answers": ["dormi"], "inputLabel": "Imperativo", "explanation": "dormire → tu dormi。"}, {"type": "fill", "topic": "voi · 一起做", "prompt": "(voi) venire → □ a trovarci!", "question": "填命令式。", "answers": ["venite"], "inputLabel": "Imperativo", "explanation": "venire → voi venite。"}, {"type": "fill", "topic": "voi · 一起做", "prompt": "Quando arrivate, (voi) telefonare → □!", "question": "填命令式。", "answers": ["telefonate"], "inputLabel": "Imperativo", "explanation": "telefonare → voi telefonate。"}, {"type": "choice", "topic": "Lei · 礼貌命令", "prompt": "Prego, signora, ___!", "question": "entrare 的 Lei 命令式是哪一个？", "options": ["entri", "entra", "entrate", "entriamo"], "correct": 0, "explanation": "对 signora 用正式 Lei：entri。"}, {"type": "fill", "topic": "Lei · 礼貌请求", "prompt": "Mi raccomando, (Lei) cercare → □ di essere puntuale!", "question": "填正式命令式。", "answers": ["cerchi"], "inputLabel": "Imperativo", "explanation": "cercare → Lei cerchi。"}, {"type": "fill", "topic": "反身动词 · voi", "prompt": "(voi) ricordarsi → □ di chiudere la porta!", "question": "填完整命令式。", "answers": ["ricordatevi"], "inputLabel": "完整形式", "explanation": "ricordate + vi → ricordatevi。"}, {"type": "fill", "topic": "反身动词 · voi", "prompt": "Prego, signori, (accomodarsi) → □!", "question": "填完整命令式。", "answers": ["accomodatevi"], "inputLabel": "完整形式", "explanation": "accomodate + vi → accomodatevi。"}, {"type": "fill", "topic": "不规则 · fare", "prompt": "Su, (voi) farsi → □ coraggio!", "question": "填完整命令式。", "answers": ["fatevi"], "inputLabel": "完整形式", "explanation": "fare → fate；加 vi → fatevi。"}, {"type": "fill", "topic": "不规则 · avere", "prompt": "(voi) avere → □ fede!", "question": "填命令式。", "answers": ["abbiate"], "inputLabel": "Imperativo", "explanation": "avere 的 voi 命令式是 abbiate。"}, {"type": "choice", "topic": "不规则 · essere", "prompt": "(noi) essere → ___!", "question": "选择正确形式。", "options": ["siamo", "siate", "sii", "sono"], "correct": 0, "explanation": "noi 的命令式：siamo。"}, {"type": "fill", "topic": "不规则 · avere Lei", "prompt": "(Lei) avere → □ pazienza!", "question": "填正式命令式。", "answers": ["abbia"], "inputLabel": "Imperativo", "explanation": "Lei abbia pazienza。"}, {"type": "fill", "topic": "不规则 · fare voi", "prompt": "(voi) fare → □ attenzione!", "question": "填命令式。", "answers": ["fate"], "inputLabel": "Imperativo", "explanation": "fare → voi fate。"}, {"type": "choice", "topic": "tu · andare", "prompt": "___ piano!", "question": "andare 的 tu 命令式最常见的是：", "options": ["Va'", "Andate", "Andiamo", "Vada"], "correct": 0, "explanation": "tu 的常见命令式：Va'!"}, {"type": "fill", "topic": "否定命令 · tu", "prompt": "(tu) parlare troppo → □!", "question": "把它变成“不要说太多”。", "answers": ["Non parlare troppo"], "inputLabel": "完整命令句", "explanation": "tu 的否定命令常用 non + infinito：Non parlare troppo!"}, {"type": "fill", "topic": "否定命令 · tu", "prompt": "(tu) correre → □!", "question": "写“不要跑！”。", "answers": ["Non correre"], "inputLabel": "完整命令句", "explanation": "Non correre!"}, {"type": "choice", "topic": "礼貌还是熟人？", "prompt": "Signora, aspetti un momento, per favore.", "question": "这里使用的是谁的命令式？", "options": ["Lei 正式称呼", "tu 熟人", "noi 我们", "voi 你们"], "correct": 0, "explanation": "Signora + aspetti 表明是正式 Lei。"}, {"type": "pairfill", "topic": "双格挑战 · 两个人称", "prompt": "parlare", "question": "分别写 tu 和 voi 的肯定命令式。", "sentenceLabel": "动词", "fields": [{"label": "tu", "answers": ["parla"]}, {"label": "voi", "answers": ["parlate"]}], "explanation": "tu parla；voi parlate。"}, {"type": "pairfill", "topic": "双格挑战 · 不规则", "prompt": "essere", "question": "分别写 tu 和 voi 的命令式。", "sentenceLabel": "动词", "fields": [{"label": "tu", "answers": ["sii"]}, {"label": "voi", "answers": ["siate"]}], "explanation": "essere：tu sii；voi siate。"}, {"type": "fill", "topic": "最后一关 · Lei", "prompt": "Mi raccomando. (Lei) spedire → □ questo pacco!", "question": "填正式命令式。", "answers": ["spedisca"], "inputLabel": "Imperativo", "explanation": "spedire → Lei spedisca。"}];
+let i=0, streak=0;
+const state=questions.map(()=>({answered:false,ok:null,value:null,values:null}));
+const card=document.getElementById('card'),counter=document.getElementById('counter'),bar=document.getElementById('bar'),stars=document.getElementById('stars'),quicknav=document.getElementById('quicknav'),doneCount=document.getElementById('doneCount');
+
+function norm(s){
+  return s.trim().toLowerCase()
+    .replace(/[’‘]/g,"'")
+    .replace(/\s+/g," ")
+    .replace(/[。.!！?？]+$/,"");
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function answeredNow(){return state.filter(x=>x.answered).length}
+function starView(){stars.textContent=streak>=3?'★ ★ ★':streak===2?'★ ★ ☆':streak===1?'★ ☆ ☆':'☆ ☆ ☆'}
+function celebrate(){
+  const chars=['⭐','✨','🌟'];
+  for(let k=0;k<7;k++){
+    const d=document.createElement('div');d.className='spark';d.textContent=chars[k%chars.length];
+    d.style.left=(45+Math.random()*20)+'vw';d.style.top=(45+Math.random()*10)+'vh';
+    document.body.appendChild(d);setTimeout(()=>d.remove(),850);
+  }
+}
+function sentenceBlock(q){
+  return `<div class="sentence-label">${q.sentenceLabel||'Frase 句子'}</div><div class="sentence">${q.prompt}</div>`;
+}
+function renderQuickNav(){
+  quicknav.innerHTML=questions.map((_,idx)=>{
+    const s=state[idx], cls=['qnum'];
+    if(idx===i)cls.push('current'); if(s.answered)cls.push(s.ok?'done':'wrong');
+    return `<button class="${cls.join(' ')}" data-jump="${idx}">${idx+1}</button>`;
+  }).join('');
+  quicknav.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>goTo(+b.dataset.jump)));
+  doneCount.textContent=`已答 ${answeredNow()} / ${questions.length}`;
+  const cur=quicknav.querySelector(`[data-jump="${i}"]`);if(cur)cur.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+function saveDraft(){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  if(q.type==='fill'){const inp=document.getElementById('single');if(inp)s.value=inp.value}
+  else if(q.type!=='choice'){const inputs=[...card.querySelectorAll('input[data-field]')];if(inputs.length)s.values=inputs.map(x=>x.value)}
+}
+function goTo(idx){if(idx<0||idx>=questions.length)return;saveDraft();i=idx;render()}
+function feedbackView(ok,text){
+  const fb=document.getElementById('fb');fb.className='feedback '+(ok?'good':'bad');
+  fb.innerHTML=`<strong>${ok?'✓ 太棒了！':'✗ 再看一眼'}</strong><br>${text}`;
+}
+function markAnswered(ok){
+  const s=state[i];if(!s.answered){s.answered=true;s.ok=ok;streak=ok?streak+1:0;starView();if(ok)celebrate()}
+  renderQuickNav();
+}
+function render(){
+  const q=questions[i],s=state[i];
+  counter.textContent=`第 ${i+1} 题 / 共 ${questions.length} 题`;
+  bar.style.width=`${((i+1)/questions.length)*100}%`;
+  let body=`<div class="mode">${q.topic}</div>${sentenceBlock(q)}`;
+  if(q.question)body+=`<div class="ask">${q.question}</div>`;
+  if(q.note)body+=`<div class="note">${q.note}</div>`;
+
+  if(q.type==='choice'){
+    body+=`<div class="options">`+q.options.map((o,idx)=>`<button class="option" data-idx="${idx}"><span class="letter">${String.fromCharCode(65+idx)}</span><span class="answertext">${o}</span></button>`).join('')+`</div>`;
+  } else if(q.type==='fill'){
+    body+=`<div class="fieldgrid"><div class="field"><label>${q.inputLabel||'你的答案'}</label><input id="single" autocomplete="off" placeholder="${q.placeholder||'在这里写答案'}"></div></div><div class="actions"><button class="primary" id="check">检查答案</button></div>`;
+  } else {
+    body+=`<div class="fieldgrid">`+q.fields.map((f,idx)=>`<div class="field"><label>${f.label}</label><input data-field="${idx}" autocomplete="off" placeholder="${f.placeholder||'写在这里'}"></div>`).join('')+`</div><div class="actions"><button class="primary" id="check">全部检查</button></div>`;
+  }
+
+  body+=`<div class="feedback" id="fb"></div>
+  <div class="navbar"><button class="secondary" id="prev" ${i===0?'disabled':''}>← 上一题</button><button class="secondary" id="next" ${i===questions.length-1?'disabled':''}>下一题 →</button></div>
+  <div class="progress-note">不用做完也可以随时前后跳题</div>`;
+  card.innerHTML=body;
+
+  document.getElementById('prev').addEventListener('click',()=>goTo(i-1));
+  document.getElementById('next').addEventListener('click',()=>goTo(i+1));
+  if(q.type==='choice')card.querySelectorAll('.option').forEach(b=>b.addEventListener('click',()=>answerChoice(+b.dataset.idx)));
+  else {
+    document.getElementById('check').addEventListener('click',answerInput);
+    card.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')answerInput()}));
+  }
+  restoreState();renderQuickNav();
+  const first=card.querySelector('input:not(:disabled)');if(first&&!s.answered)setTimeout(()=>first.focus(),50);
+}
+function restoreState(){
+  const q=questions[i],s=state[i];
+  if(q.type==='choice'){
+    if(s.answered){
+      const bs=[...card.querySelectorAll('.option')];
+      bs.forEach((b,j)=>{b.disabled=true;if(j===q.correct)b.classList.add('correct')});
+      if(!s.ok&&s.value!=null)bs[s.value]?.classList.add('wrong');
+      feedbackView(s.ok,q.explanation);
+    }
+  } else if(q.type==='fill'){
+    const inp=document.getElementById('single');if(s.value)inp.value=s.value;
+    if(s.answered){
+      inp.disabled=true;inp.classList.add(s.ok?'good':'bad');document.getElementById('check').disabled=true;
+      feedbackView(s.ok,q.explanation+(s.ok?'':`<br><b>参考答案：</b>${q.answers[0]}`));
+    }
+  } else {
+    const inputs=[...card.querySelectorAll('input[data-field]')];if(s.values)inputs.forEach((inp,idx)=>inp.value=s.values[idx]||'');
+    if(s.answered){
+      inputs.forEach((inp,idx)=>{const f=q.fields[idx],ok=f.answers.some(a=>norm(a)===norm(inp.value));inp.disabled=true;inp.classList.add(ok?'good':'bad')});
+      document.getElementById('check').disabled=true;
+      const correct=q.fields.map(f=>`${f.label} = ${f.answers[0]}`);
+      feedbackView(s.ok,q.explanation+(s.ok?'':`<br><b>参考：</b><br>${correct.join('<br>')}`));
+    }
+  }
+}
+function answerChoice(idx){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  s.value=idx;markAnswered(idx===q.correct);render();
+}
+function answerInput(){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  if(q.type==='fill'){
+    const inp=document.getElementById('single');if(!inp.value.trim())return;
+    s.value=inp.value;markAnswered(q.answers.some(a=>norm(a)===norm(inp.value)));render();
+  } else {
+    const inputs=[...card.querySelectorAll('input[data-field]')];if(inputs.some(x=>!x.value.trim()))return;
+    s.values=inputs.map(x=>x.value);let all=true;
+    inputs.forEach((inp,idx)=>{if(!q.fields[idx].answers.some(a=>norm(a)===norm(inp.value)))all=false});
+    markAnswered(all);render();
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
+  if(e.key==='ArrowLeft')goTo(i-1);if(e.key==='ArrowRight')goTo(i+1);
+});
+render();
+</script>
+</body></html>

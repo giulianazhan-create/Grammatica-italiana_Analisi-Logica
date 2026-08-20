@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analisi logica · 儿童趣味闯关</title>
+<style>
+:root {
+  --bg:#f8f7fb; --card:#fff; --text:#1d2939; --muted:#667085; --line:#e4e7ec;
+  --good:#18794e; --goodbg:#eaf7f0; --bad:#b42318; --badbg:#fff0ee; --accent:#5b5bd6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:840px;margin:auto;padding:22px 14px 50px}
+.top{background:white;border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:14px}
+h1{font-size:24px;margin:0 0 6px} .sub{color:var(--muted);font-size:14px;line-height:1.6}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:14px}
+.counter{font-weight:800} .stars{font-size:21px;letter-spacing:2px}
+.progress{height:10px;background:#ececf3;border-radius:999px;overflow:hidden}
+.bar{height:100%;background:var(--accent);width:0;transition:.25s}
+.card{background:white;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 9px 30px rgba(16,24,40,.06)}
+.mode{font-size:14px;font-weight:850;color:var(--accent);margin-bottom:14px}
+.sentence-label{font-size:13px;color:var(--muted);font-weight:750;margin-bottom:5px}
+.sentence{font-size:25px;line-height:1.55;font-weight:850;margin-bottom:24px;padding:14px 16px;border-radius:14px;background:#fafaff}
+.ask{font-size:18px;font-weight:750;line-height:1.6;margin-bottom:18px}
+.options{display:grid;gap:14px}
+.option{display:flex;align-items:flex-start;gap:24px;width:100%;border:1.5px solid var(--line);background:white;border-radius:15px;padding:17px 20px;text-align:left;cursor:pointer;font-size:17px;line-height:1.6}
+.option:hover{border-color:#b8b8df}
+.letter{flex:0 0 44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;background:#f0f0fb;font-size:18px}
+.option.correct{background:var(--goodbg);border-color:var(--good)} .option.correct .letter{background:var(--good);color:#fff}
+.option.wrong{background:var(--badbg);border-color:var(--bad)} .option.wrong .letter{background:var(--bad);color:#fff}
+.answertext{flex:1;padding-top:7px}
+.fieldgrid{display:grid;gap:14px}
+.field{display:grid;grid-template-columns:minmax(185px,.8fr) 1.2fr;gap:14px;align-items:center}
+.field label{font-weight:800;line-height:1.35}
+input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:14px 15px;font-size:17px;outline:none}
+input:focus{border-color:var(--accent)} input.good{border-color:var(--good);background:var(--goodbg)} input.bad{border-color:var(--bad);background:var(--badbg)}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button.primary{border:0;background:var(--accent);color:white;border-radius:12px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.feedback{display:none;margin-top:18px;border-radius:13px;padding:15px 16px;line-height:1.6}
+.feedback.good{display:block;background:var(--goodbg);color:var(--good)} .feedback.bad{display:block;background:var(--badbg);color:var(--bad)}
+.next{display:none;width:100%;margin-top:18px} .next.show{display:block}
+.result{text-align:center} .score{font-size:54px;font-weight:900;margin:8px 0}
+.review{display:grid;gap:12px;margin-top:24px;text-align:left} .reviewitem{border:1px solid var(--line);border-radius:12px;padding:14px}
+.spark{position:fixed;pointer-events:none;font-size:26px;animation:pop .8s ease-out forwards}
+@keyframes pop{0%{transform:translateY(0) scale(.6);opacity:1}100%{transform:translateY(-70px) scale(1.3);opacity:0}}
+@media(max-width:620px){
+  .card{padding:20px} .sentence{font-size:21px}
+  .field{grid-template-columns:1fr} .option{gap:18px} .letter{flex-basis:40px;height:40px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Prima lezione · Analisi logica</h1>
+    <div class="sub">有选择题，也有填空、双格挑战和完整分析。每题做完马上告诉你对不对。</div>
+    <div class="row"><div class="counter" id="counter"></div><div class="stars" id="stars">☆ ☆ ☆</div></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+  <main class="card" id="card"></main>
+</div>
+<script>
+const questions=[{"type": "pairfill", "topic": "小侦探 · 找主语和谓语", "prompt": "Marco studia ogni giorno.", "fields": [{"label": "Soggetto 主语", "answers": ["Marco"]}, {"label": "Predicato 谓语", "answers": ["studia"]}], "explanation": "Marco 是做动作的人；studia 是动作。"}, {"type": "choice", "topic": "点一点 · 找主语", "prompt": "Gli studenti ascoltano la professoressa.", "question": "谁是 Soggetto（主语）？", "options": ["Gli studenti", "ascoltano", "la professoressa", "nessuno"], "correct": 0, "explanation": "Gli studenti 是主语，因为是“学生们”在听。"}, {"type": "fill", "topic": "填空 · 找谓语", "prompt": "Domani Marta parte.", "question": "Predicato（谓语）是：", "answers": ["parte"], "explanation": "parte 是句子里的动作。"}, {"type": "pairfill", "topic": "双格挑战 · 主语 + 谓语", "prompt": "Luca e Paolo giocano nel parco.", "fields": [{"label": "Soggetto 主语", "answers": ["Luca e Paolo"]}, {"label": "Predicato 谓语", "answers": ["giocano"]}], "explanation": "Luca e Paolo 是一起做动作的人；giocano 是动作。"}, {"type": "choice", "topic": "隐藏主语 · 猜一猜", "prompt": "Andiamo a scuola alle otto.", "question": "句子里没有写出来的主语是谁？", "options": ["io", "tu", "noi", "voi"], "correct": 2, "explanation": "andiamo 是第一人称复数，所以隐藏主语是 noi。"}, {"type": "choice", "topic": "分类小侦探 · 宾语", "prompt": "Vedo Marco.", "question": "“Marco” 是哪一种？", "options": ["Complemento oggetto 直接宾语", "Complemento di termine 间接宾语", "Luogo 地点", "Tempo 时间"], "correct": 0, "explanation": "Vedo chi? Marco. 没有介词 a，所以是直接宾语。"}, {"type": "choice", "topic": "分类小侦探 · 宾语", "prompt": "Parlo a Marco.", "question": "“a Marco” 是哪一种？", "options": ["Complemento oggetto 直接宾语", "Complemento di termine 间接宾语", "Luogo 地点", "Tempo 时间"], "correct": 1, "explanation": "Parlo a chi? A Marco. 这里是间接宾语。"}, {"type": "fill", "topic": "填空 · 写全称", "prompt": "Conosco Anna.", "question": "“Anna” 是哪一种成分？请写完整意大利语名称。", "answers": ["Complemento oggetto", "complemento oggetto"], "explanation": "Conosco chi? Anna → Complemento oggetto。"}, {"type": "fill", "topic": "填空 · 写全称", "prompt": "Telefono ad Anna.", "question": "“ad Anna” 是哪一种成分？请写完整意大利语名称。", "answers": ["Complemento di termine", "complemento di termine"], "explanation": "Telefono a chi? Ad Anna → Complemento di termine。"}, {"type": "choice", "topic": "一眼判断 · 直接还是间接", "prompt": "Il professore aiuta gli studenti.", "question": "“gli studenti” 是：", "options": ["Complemento oggetto 直接宾语", "Complemento di termine 间接宾语", "Luogo 地点", "Tempo 时间"], "correct": 0, "explanation": "Aiuta chi? Gli studenti → 直接宾语。"}, {"type": "choice", "topic": "一眼判断 · 直接还是间接", "prompt": "Il professore parla agli studenti.", "question": "“agli studenti” 是：", "options": ["Complemento oggetto 直接宾语", "Complemento di termine 间接宾语", "Luogo 地点", "Tempo 时间"], "correct": 1, "explanation": "Parla a chi? Agli studenti → 间接宾语。"}, {"type": "choice", "topic": "地点还是时间？", "prompt": "a Roma", "question": "这是地点还是时间？", "options": ["Luogo 地点", "Tempo 时间", "Complemento oggetto", "Complemento di termine"], "correct": 0, "explanation": "Roma 是一个地点，所以 a Roma 表示地点。"}, {"type": "choice", "topic": "地点还是时间？", "prompt": "domani", "question": "这是地点还是时间？", "options": ["Luogo 地点", "Tempo 时间", "Complemento oggetto", "Complemento di termine"], "correct": 1, "explanation": "domani = 明天，所以表示时间。"}, {"type": "fill", "topic": "快写一个字母？不，这次写完整", "prompt": "in classe", "question": "请写完整名称：Luogo 还是 Tempo？", "answers": ["Luogo", "luogo"], "explanation": "in classe 表示“在教室里”，所以是 Luogo。"}, {"type": "fill", "topic": "快写一个字母？不，这次写完整", "prompt": "alle otto", "question": "请写完整名称：Luogo 还是 Tempo？", "answers": ["Tempo", "tempo"], "explanation": "alle otto = 八点，所以是 Tempo。"}, {"type": "choice", "topic": "分类小卡片", "prompt": "per due ore", "question": "它属于哪一类？", "options": ["Luogo 地点", "Tempo 时间", "Complemento oggetto", "Complemento di termine"], "correct": 1, "explanation": "per due ore 表示持续两小时，是时间。"}, {"type": "choice", "topic": "分类小卡片", "prompt": "sul tavolo", "question": "它属于哪一类？", "options": ["Luogo 地点", "Tempo 时间", "Complemento oggetto", "Complemento di termine"], "correct": 0, "explanation": "sul tavolo = 在桌子上，表示地点。"}, {"type": "analysis", "topic": "大挑战 · 完整分析", "prompt": "Marco dà un libro a Luca.", "fields": [{"label": "Soggetto 主语", "answers": ["Marco"]}, {"label": "Predicato 谓语", "answers": ["dà", "da"]}, {"label": "Complemento oggetto 直接宾语", "answers": ["un libro"]}, {"label": "Complemento di termine 间接宾语", "answers": ["a Luca"]}], "explanation": "Marco 做动作；dà 是动作；un libro 是“给什么”；a Luca 是“给谁”。"}, {"type": "analysis", "topic": "大挑战 · 完整分析", "prompt": "Domani Marta va a scuola.", "fields": [{"label": "Soggetto 主语", "answers": ["Marta"]}, {"label": "Predicato 谓语", "answers": ["va"]}, {"label": "Luogo 地点", "answers": ["a scuola"]}, {"label": "Tempo 时间", "answers": ["Domani", "domani"]}], "explanation": "Marta 是主语；va 是谓语；a scuola 是地点；Domani 是时间。"}, {"type": "analysis", "topic": "大挑战 · 完整分析", "prompt": "La professoressa spiega la grammatica agli studenti.", "fields": [{"label": "Soggetto 主语", "answers": ["La professoressa", "la professoressa"]}, {"label": "Predicato 谓语", "answers": ["spiega"]}, {"label": "Complemento oggetto 直接宾语", "answers": ["la grammatica"]}, {"label": "Complemento di termine 间接宾语", "answers": ["agli studenti"]}], "explanation": "谁在解释？La professoressa；解释什么？la grammatica；给谁解释？agli studenti。"}, {"type": "analysis", "topic": "大挑战 · 完整分析", "prompt": "Ogni mattina Paolo prende l’autobus.", "fields": [{"label": "Soggetto 主语", "answers": ["Paolo"]}, {"label": "Predicato 谓语", "answers": ["prende"]}, {"label": "Complemento oggetto 直接宾语", "answers": ["l’autobus", "l'autobus"]}, {"label": "Tempo 时间", "answers": ["Ogni mattina", "ogni mattina"]}], "explanation": "Paolo 是主语；prende 是动作；l’autobus 是直接宾语；Ogni mattina 是时间。"}, {"type": "fill", "topic": "隐藏主语 · 填空", "prompt": "Studio italiano.", "question": "隐藏主语是：", "answers": ["io"], "explanation": "Studio → io。"}, {"type": "fill", "topic": "隐藏主语 · 填空", "prompt": "Mangiate una pizza.", "question": "隐藏主语是：", "answers": ["voi"], "explanation": "Mangiate → voi。"}, {"type": "fill", "topic": "隐藏主语 · 填空", "prompt": "Dormono molto.", "question": "隐藏主语是：", "answers": ["loro"], "explanation": "Dormono → loro。"}, {"type": "choice", "topic": "隐藏主语 · 点一点", "prompt": "Leggi il testo.", "question": "隐藏主语是谁？", "options": ["io", "tu", "noi", "loro"], "correct": 1, "explanation": "Leggi → tu。"}, {"type": "analysis", "topic": "终极挑战 · 综合分析", "prompt": "Oggi Marco porta i libri a scuola.", "fields": [{"label": "Soggetto 主语", "answers": ["Marco"]}, {"label": "Predicato 谓语", "answers": ["porta"]}, {"label": "Complemento oggetto 直接宾语", "answers": ["i libri"]}, {"label": "Luogo 地点", "answers": ["a scuola"]}, {"label": "Tempo 时间", "answers": ["Oggi", "oggi"]}], "explanation": "Marco 是主语；porta 是谓语；i libri 是直接宾语；a scuola 是地点；Oggi 是时间。"}, {"type": "analysis", "topic": "终极挑战 · 综合分析", "prompt": "Anna scrive una mail al professore ogni sera.", "fields": [{"label": "Soggetto 主语", "answers": ["Anna"]}, {"label": "Predicato 谓语", "answers": ["scrive"]}, {"label": "Complemento oggetto 直接宾语", "answers": ["una mail"]}, {"label": "Complemento di termine 间接宾语", "answers": ["al professore"]}, {"label": "Tempo 时间", "answers": ["ogni sera", "Ogni sera"]}], "explanation": "Anna 写；写什么 una mail；写给谁 al professore；什么时候 ogni sera。"}, {"type": "analysis", "topic": "终极挑战 · 综合分析", "prompt": "Domani la professoressa spiega un esercizio agli studenti in classe.", "fields": [{"label": "Soggetto 主语", "answers": ["la professoressa", "La professoressa"]}, {"label": "Predicato 谓语", "answers": ["spiega"]}, {"label": "Complemento oggetto 直接宾语", "answers": ["un esercizio"]}, {"label": "Complemento di termine 间接宾语", "answers": ["agli studenti"]}, {"label": "Luogo 地点", "answers": ["in classe"]}, {"label": "Tempo 时间", "answers": ["Domani", "domani"]}], "explanation": "把“谁、做什么、什么东西、给谁、在哪里、什么时候”依次找出来即可。"}];
+let i=0,score=0,locked=false,streak=0;
+const results=[];
+const card=document.getElementById('card'), counter=document.getElementById('counter'), bar=document.getElementById('bar'), stars=document.getElementById('stars');
+
+function norm(s){return s.trim().toLowerCase().replace(/[’‘]/g,"'").replace(/\s+/g," ").replace(/[。.]$/,"")}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function starView(){stars.textContent=streak>=3?'★ ★ ★':streak===2?'★ ★ ☆':streak===1?'★ ☆ ☆':'☆ ☆ ☆'}
+function celebrate(){
+  const chars=['⭐','✨','🌟'];
+  for(let k=0;k<7;k++){
+    const d=document.createElement('div'); d.className='spark'; d.textContent=chars[k%chars.length];
+    d.style.left=(45+Math.random()*20)+'vw'; d.style.top=(45+Math.random()*10)+'vh';
+    document.body.appendChild(d); setTimeout(()=>d.remove(),850);
+  }
+}
+function sentenceBlock(q){
+  return `<div class="sentence-label">Frase 句子</div><div class="sentence">${q.prompt}</div>`;
+}
+function render(){
+  locked=false;
+  if(i>=questions.length) return finish();
+  const q=questions[i];
+  counter.textContent=`第 ${i+1} 题 / 共 ${questions.length} 题`;
+  bar.style.width=`${(i/questions.length)*100}%`;
+  let body=`<div class="mode">${q.topic}</div>${sentenceBlock(q)}`;
+  if(q.question) body+=`<div class="ask">${q.question}</div>`;
+  if(q.type==='choice'){
+    body+=`<div class="options">`+q.options.map((o,idx)=>`<button class="option" data-idx="${idx}"><span class="letter">${String.fromCharCode(65+idx)}</span><span class="answertext">${o}</span></button>`).join('')+`</div>`;
+  } else if(q.type==='fill'){
+    body+=`<div class="fieldgrid"><div class="field"><label>你的答案</label><input id="single" autocomplete="off" placeholder="在这里写答案"></div></div><div class="actions"><button class="primary" id="check">检查答案</button></div>`;
+  } else {
+    body+=`<div class="fieldgrid">`+q.fields.map((f,idx)=>`<div class="field"><label>${f.label}</label><input data-field="${idx}" autocomplete="off" placeholder="写在这里"></div>`).join('')+`</div><div class="actions"><button class="primary" id="check">全部检查</button></div>`;
+  }
+  body+=`<div class="feedback" id="fb"></div><button class="primary next" id="next">${i===questions.length-1?'看成绩':'下一题'}</button>`;
+  card.innerHTML=body;
+
+  if(q.type==='choice') card.querySelectorAll('.option').forEach(b=>b.addEventListener('click',()=>answerChoice(+b.dataset.idx)));
+  else document.getElementById('check').addEventListener('click',answerInput);
+
+  const first=card.querySelector('input'); if(first) setTimeout(()=>first.focus(),50);
+  card.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter') answerInput()}));
+  document.getElementById('next').addEventListener('click',()=>{i++;render()});
+}
+function feedback(ok,text){
+  const fb=document.getElementById('fb'); fb.className='feedback '+(ok?'good':'bad');
+  fb.innerHTML=`<strong>${ok?'✓ 太棒了！':'✗ 再看一眼'}</strong><br>${text}`;
+  document.getElementById('next').classList.add('show');
+  streak=ok?streak+1:0; starView(); if(ok) celebrate();
+}
+function answerChoice(idx){
+  if(locked)return; locked=true;
+  const q=questions[i], ok=idx===q.correct; if(ok)score++;
+  const bs=[...card.querySelectorAll('.option')]; bs.forEach((b,j)=>{b.disabled=true;if(j===q.correct)b.classList.add('correct')}); if(!ok)bs[idx].classList.add('wrong');
+  results.push({prompt:q.prompt,ok,yours:q.options[idx],correct:q.options[q.correct]});
+  feedback(ok,q.explanation);
+}
+function answerInput(){
+  if(locked)return;
+  const q=questions[i];
+  if(q.type==='fill'){
+    const inp=document.getElementById('single'); if(!inp.value.trim())return;
+    locked=true; const ok=q.answers.some(a=>norm(a)===norm(inp.value)); inp.disabled=true; inp.classList.add(ok?'good':'bad');
+    if(ok)score++;
+    results.push({prompt:q.prompt,ok,yours:inp.value,correct:q.answers[0]});
+    feedback(ok,q.explanation+(ok?'':`<br><b>正确答案：</b>${q.answers[0]}`));
+  } else {
+    const inputs=[...card.querySelectorAll('input[data-field]')]; if(inputs.some(x=>!x.value.trim()))return;
+    locked=true; let all=true; const yours=[],correct=[];
+    inputs.forEach((inp,idx)=>{const f=q.fields[idx]; const ok=f.answers.some(a=>norm(a)===norm(inp.value)); inp.disabled=true; inp.classList.add(ok?'good':'bad'); if(!ok)all=false; yours.push(inp.value); correct.push(f.label+' = '+f.answers[0])});
+    if(all)score++;
+    results.push({prompt:q.prompt,ok:all,yours:yours.join(' / '),correct:correct.join('；')});
+    feedback(all,q.explanation+(all?'':`<br><b>参考：</b><br>${correct.join('<br>')}`));
+  }
+}
+function finish(){
+  counter.textContent=`完成 ${questions.length} 题`; bar.style.width='100%';
+  const wrong=results.filter(r=>!r.ok), pct=Math.round(score/questions.length*100);
+  card.innerHTML=`<div class="result"><div class="mode">闯关完成</div><div class="score">${score} / ${questions.length}</div><div>正确率 ${pct}%</div>${wrong.length?`<div class="review"><h3>再看一看这些题</h3>${wrong.map((r,n)=>`<div class="reviewitem"><b>${n+1}. ${r.prompt}</b><div>你的答案：${esc(r.yours)}</div><div>参考答案：${esc(r.correct)}</div></div>`).join('')}</div>`:'<p>全部答对啦！⭐</p>'}<button class="primary" style="margin-top:22px" onclick="location.reload()">再玩一遍</button></div>`;
+}
+render();
+</script>
+</body></html>

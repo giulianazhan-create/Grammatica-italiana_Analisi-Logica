@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Negazione · 儿童趣味闯关</title>
+<style>
+:root {
+  --bg:#f8f7fb; --card:#fff; --text:#1d2939; --muted:#667085; --line:#e4e7ec;
+  --good:#18794e; --goodbg:#eaf7f0; --bad:#b42318; --badbg:#fff0ee; --accent:#5b5bd6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:860px;margin:auto;padding:22px 14px 50px}
+.top{background:white;border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:14px}
+h1{font-size:24px;margin:0 0 6px} .sub{color:var(--muted);font-size:14px;line-height:1.65}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:14px}
+.counter{font-weight:850} .stars{font-size:21px;letter-spacing:2px}
+.progress{height:10px;background:#ececf3;border-radius:999px;overflow:hidden}
+.bar{height:100%;background:var(--accent);width:0;transition:.25s}
+.quicknav-wrap{margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}
+.quicknav-title{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:13px;color:var(--muted);font-weight:800}
+.quicknav{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.qnum{flex:0 0 38px;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;font-weight:850;cursor:pointer}
+.qnum.current{border-color:var(--accent);box-shadow:0 0 0 2px rgba(91,91,214,.12)}
+.qnum.done{background:var(--goodbg);border-color:var(--good)} .qnum.wrong{background:var(--badbg);border-color:var(--bad)}
+.card{background:white;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 9px 30px rgba(16,24,40,.06)}
+.mode{font-size:14px;font-weight:900;color:var(--accent);margin-bottom:14px}
+.sentence-label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:5px}
+.sentence{font-size:25px;line-height:1.55;font-weight:850;margin-bottom:24px;padding:14px 16px;border-radius:14px;background:#fafaff}
+.ask{font-size:18px;font-weight:800;line-height:1.65;margin-bottom:18px}
+.note{font-size:14px;color:var(--muted);margin:-6px 0 16px;line-height:1.5}
+.options{display:grid;gap:14px}
+.option{display:flex;align-items:flex-start;gap:24px;width:100%;border:1.5px solid var(--line);background:white;border-radius:15px;padding:17px 20px;text-align:left;cursor:pointer;font-size:17px;line-height:1.6}
+.option:hover{border-color:#b8b8df} .option:disabled{cursor:default}
+.letter{flex:0 0 44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;background:#f0f0fb;font-size:18px}
+.answertext{flex:1;padding-top:7px}
+.option.correct{background:var(--goodbg);border-color:var(--good)} .option.correct .letter{background:var(--good);color:#fff}
+.option.wrong{background:var(--badbg);border-color:var(--bad)} .option.wrong .letter{background:var(--bad);color:#fff}
+.fieldgrid{display:grid;gap:14px}
+.field{display:grid;grid-template-columns:minmax(190px,.8fr) 1.2fr;gap:14px;align-items:center}
+.field label{font-weight:850;line-height:1.4}
+input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:14px 15px;font-size:17px;outline:none}
+input:focus{border-color:var(--accent)} input.good{border-color:var(--good);background:var(--goodbg)} input.bad{border-color:var(--bad);background:var(--badbg)}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button.primary{border:0;background:var(--accent);color:white;border-radius:12px;padding:13px 18px;font-weight:850;font-size:15px;cursor:pointer}
+button.secondary{border:1.5px solid var(--line);background:#fff;color:var(--text);border-radius:12px;padding:13px 18px;font-weight:850;font-size:15px;cursor:pointer}
+button.secondary:disabled{opacity:.45;cursor:default}
+.feedback{display:none;margin-top:18px;border-radius:13px;padding:15px 16px;line-height:1.65}
+.feedback.good{display:block;background:var(--goodbg);color:var(--good)} .feedback.bad{display:block;background:var(--badbg);color:var(--bad)}
+.navbar{display:flex;gap:10px;margin-top:18px} .navbar button{flex:1}
+.progress-note{font-size:13px;color:var(--muted);margin-top:8px;text-align:right}
+.result{text-align:center} .score{font-size:54px;font-weight:900;margin:8px 0}
+.review{display:grid;gap:12px;margin-top:24px;text-align:left} .reviewitem{border:1px solid var(--line);border-radius:12px;padding:14px}
+.spark{position:fixed;pointer-events:none;font-size:26px;animation:pop .8s ease-out forwards}
+@keyframes pop{0%{transform:translateY(0) scale(.6);opacity:1}100%{transform:translateY(-70px) scale(1.3);opacity:0}}
+@media(max-width:620px){
+  .card{padding:20px} .sentence{font-size:21px} .field{grid-template-columns:1fr}
+  .option{gap:18px} .letter{flex-basis:40px;height:40px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Negazione · 儿童趣味闯关</h1>
+    <div class="sub">基础题 + 一点点挑战。选择、填空、双格混合；答完立即反馈，也可以随时跳题。</div>
+    <div class="row"><div class="counter" id="counter"></div><div class="stars" id="stars">☆ ☆ ☆</div></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+  <div class="quicknav-wrap">
+    <div class="quicknav-title"><span>快速浏览 · 点题号直接跳转</span><span id="doneCount">已答 0</span></div>
+    <div class="quicknav" id="quicknav"></div>
+  </div>
+  <main class="card" id="card"></main>
+</div>
+<script>
+const questions=[{"type": "choice", "topic": "热身 · non 放哪里？", "prompt": "Marco studia italiano.", "question": "哪一句是否定句？", "options": ["Marco non studia italiano.", "Non Marco studia italiano.", "Marco studia non italiano.", "Marco studia italiano non."], "correct": 0, "explanation": "最常见的规则：non 放在变位动词前面。"}, {"type": "fill", "topic": "变身魔法 · 改成否定句", "prompt": "Oggi dovrebbe piovere.", "question": "把整句话改成否定句。", "answers": ["Oggi non dovrebbe piovere"], "inputLabel": "否定句", "explanation": "non 放在 dovrebbe 前：Oggi non dovrebbe piovere."}, {"type": "fill", "topic": "变身魔法 · 改成否定句", "prompt": "Ettore studia abbastanza.", "question": "把整句话改成否定句。", "answers": ["Ettore non studia abbastanza"], "inputLabel": "否定句", "explanation": "non + studia → Ettore non studia abbastanza."}, {"type": "choice", "topic": "找位置 · essere", "prompt": "Il museo è in centro.", "question": "哪一句是正确否定？", "options": ["Il museo non è in centro.", "Il museo è non in centro.", "Non il museo è in centro.", "Il museo è in centro non."], "correct": 0, "explanation": "essere 的变位 è 前面放 non：non è。"}, {"type": "fill", "topic": "复合时态 · 小挑战", "prompt": "L’impiegato alla posta è stato gentile.", "question": "把整句话改成否定句。", "answers": ["L'impiegato alla posta non è stato gentile", "L’impiegato alla posta non è stato gentile"], "inputLabel": "否定句", "explanation": "复合时态里 non 放在助动词 è 前：non è stato。"}, {"type": "choice", "topic": "情态动词 · 选一选", "prompt": "Donatella doveva venire.", "question": "哪一句是正确否定？", "options": ["Donatella non doveva venire.", "Donatella doveva non venire.", "Non Donatella doveva venire.", "Donatella doveva venire non."], "correct": 0, "explanation": "初学阶段记住：non 放在变位的情态动词 doveva 前。"}, {"type": "fill", "topic": "一起住？· 改成否定", "prompt": "Io e Giacomo vogliamo abitare insieme.", "question": "把整句话改成否定句。", "answers": ["Io e Giacomo non vogliamo abitare insieme"], "inputLabel": "否定句", "explanation": "non 放在 vogliamo 前。"}, {"type": "choice", "topic": "否定问句 · 点一点", "prompt": "Ce l’hai la macchina?", "question": "哪一句是否定问句？", "options": ["Non ce l’hai la macchina?", "Ce non l’hai la macchina?", "Ce l’hai non la macchina?", "Non la macchina ce l’hai?"], "correct": 0, "explanation": "常见说法是：Non ce l’hai la macchina?"}, {"type": "fill", "topic": "否定问句 · 自己写", "prompt": "Domani vieni a mensa?", "question": "把它改成否定问句。", "answers": ["Domani non vieni a mensa", "Non vieni a mensa domani"], "inputLabel": "否定问句", "explanation": "最直接的写法：Domani non vieni a mensa?"}, {"type": "pairfill", "topic": "双格挑战 · non + 动词", "prompt": "Paolo mangia la pizza.", "question": "先填否定词，再填动词。", "fields": [{"label": "否定词", "answers": ["non"]}, {"label": "动词", "answers": ["mangia"]}], "explanation": "组合起来就是 Paolo non mangia la pizza."}, {"type": "choice", "topic": "真假侦探 · 哪个对？", "prompt": "Anna non parla inglese.", "question": "这句里的 non 在什么位置？", "options": ["在变位动词 parla 前", "在主语 Anna 前", "在宾语 inglese 后", "在句末"], "correct": 0, "explanation": "non 紧挨在变位动词 parla 前面。"}, {"type": "fill", "topic": "基础加固 · essere", "prompt": "Noi siamo stanchi.", "question": "改成否定句。", "answers": ["Noi non siamo stanchi"], "inputLabel": "否定句", "explanation": "siamo 前加 non。"}, {"type": "fill", "topic": "基础加固 · avere", "prompt": "Luca ha fame.", "question": "改成否定句。", "answers": ["Luca non ha fame"], "inputLabel": "否定句", "explanation": "ha 前加 non。"}, {"type": "choice", "topic": "小陷阱 · 选正确", "prompt": "Voi avete tempo.", "question": "正确否定句是：", "options": ["Voi non avete tempo.", "Voi avete non tempo.", "Non voi avete tempo.", "Voi avete tempo non."], "correct": 0, "explanation": "non 放在 avete 前。"}, {"type": "fill", "topic": "难一点点 · potere", "prompt": "Posso venire domani.", "question": "改成否定句。", "answers": ["Non posso venire domani", "Io non posso venire domani"], "inputLabel": "否定句", "explanation": "posso 前加 non：Non posso venire domani."}, {"type": "choice", "topic": "难一点点 · dovere", "prompt": "Dobbiamo partire presto.", "question": "哪一句正确？", "options": ["Non dobbiamo partire presto.", "Dobbiamo non partire presto.", "Non partire dobbiamo presto.", "Dobbiamo partire presto non."], "correct": 0, "explanation": "初学规则仍然一样：non + dobbiamo。"}, {"type": "fill", "topic": "句子变身 · 自己写", "prompt": "Maria vuole comprare il gelato.", "question": "改成否定句。", "answers": ["Maria non vuole comprare il gelato"], "inputLabel": "否定句", "explanation": "non 放在 vuole 前。"}, {"type": "choice", "topic": "最后一关 · 找错误", "prompt": "Paolo non è a casa.", "question": "这句话正确吗？", "options": ["正确，non 放在 è 前", "错误，non 应放在句末", "错误，non 应放在 Paolo 前", "错误，不能否定 essere"], "correct": 0, "explanation": "这就是标准的 essere 否定结构：non è。"}];
+let i=0, streak=0;
+const state=questions.map(()=>({answered:false,ok:null,value:null,values:null}));
+const card=document.getElementById('card'),counter=document.getElementById('counter'),bar=document.getElementById('bar'),stars=document.getElementById('stars'),quicknav=document.getElementById('quicknav'),doneCount=document.getElementById('doneCount');
+
+function norm(s){
+  return s.trim().toLowerCase()
+    .replace(/[’‘]/g,"'")
+    .replace(/\s+/g," ")
+    .replace(/[。.!！?？]+$/,"");
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function answeredNow(){return state.filter(x=>x.answered).length}
+function starView(){stars.textContent=streak>=3?'★ ★ ★':streak===2?'★ ★ ☆':streak===1?'★ ☆ ☆':'☆ ☆ ☆'}
+function celebrate(){
+  const chars=['⭐','✨','🌟'];
+  for(let k=0;k<7;k++){
+    const d=document.createElement('div');d.className='spark';d.textContent=chars[k%chars.length];
+    d.style.left=(45+Math.random()*20)+'vw';d.style.top=(45+Math.random()*10)+'vh';
+    document.body.appendChild(d);setTimeout(()=>d.remove(),850);
+  }
+}
+function sentenceBlock(q){
+  return `<div class="sentence-label">${q.sentenceLabel||'Frase 句子'}</div><div class="sentence">${q.prompt}</div>`;
+}
+function renderQuickNav(){
+  quicknav.innerHTML=questions.map((_,idx)=>{
+    const s=state[idx], cls=['qnum'];
+    if(idx===i)cls.push('current'); if(s.answered)cls.push(s.ok?'done':'wrong');
+    return `<button class="${cls.join(' ')}" data-jump="${idx}">${idx+1}</button>`;
+  }).join('');
+  quicknav.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>goTo(+b.dataset.jump)));
+  doneCount.textContent=`已答 ${answeredNow()} / ${questions.length}`;
+  const cur=quicknav.querySelector(`[data-jump="${i}"]`);if(cur)cur.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+function saveDraft(){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  if(q.type==='fill'){const inp=document.getElementById('single');if(inp)s.value=inp.value}
+  else if(q.type!=='choice'){const inputs=[...card.querySelectorAll('input[data-field]')];if(inputs.length)s.values=inputs.map(x=>x.value)}
+}
+function goTo(idx){if(idx<0||idx>=questions.length)return;saveDraft();i=idx;render()}
+function feedbackView(ok,text){
+  const fb=document.getElementById('fb');fb.className='feedback '+(ok?'good':'bad');
+  fb.innerHTML=`<strong>${ok?'✓ 太棒了！':'✗ 再看一眼'}</strong><br>${text}`;
+}
+function markAnswered(ok){
+  const s=state[i];if(!s.answered){s.answered=true;s.ok=ok;streak=ok?streak+1:0;starView();if(ok)celebrate()}
+  renderQuickNav();
+}
+function render(){
+  const q=questions[i],s=state[i];
+  counter.textContent=`第 ${i+1} 题 / 共 ${questions.length} 题`;
+  bar.style.width=`${((i+1)/questions.length)*100}%`;
+  let body=`<div class="mode">${q.topic}</div>${sentenceBlock(q)}`;
+  if(q.question)body+=`<div class="ask">${q.question}</div>`;
+  if(q.note)body+=`<div class="note">${q.note}</div>`;
+
+  if(q.type==='choice'){
+    body+=`<div class="options">`+q.options.map((o,idx)=>`<button class="option" data-idx="${idx}"><span class="letter">${String.fromCharCode(65+idx)}</span><span class="answertext">${o}</span></button>`).join('')+`</div>`;
+  } else if(q.type==='fill'){
+    body+=`<div class="fieldgrid"><div class="field"><label>${q.inputLabel||'你的答案'}</label><input id="single" autocomplete="off" placeholder="${q.placeholder||'在这里写答案'}"></div></div><div class="actions"><button class="primary" id="check">检查答案</button></div>`;
+  } else {
+    body+=`<div class="fieldgrid">`+q.fields.map((f,idx)=>`<div class="field"><label>${f.label}</label><input data-field="${idx}" autocomplete="off" placeholder="${f.placeholder||'写在这里'}"></div>`).join('')+`</div><div class="actions"><button class="primary" id="check">全部检查</button></div>`;
+  }
+
+  body+=`<div class="feedback" id="fb"></div>
+  <div class="navbar"><button class="secondary" id="prev" ${i===0?'disabled':''}>← 上一题</button><button class="secondary" id="next" ${i===questions.length-1?'disabled':''}>下一题 →</button></div>
+  <div class="progress-note">不用做完也可以随时前后跳题</div>`;
+  card.innerHTML=body;
+
+  document.getElementById('prev').addEventListener('click',()=>goTo(i-1));
+  document.getElementById('next').addEventListener('click',()=>goTo(i+1));
+  if(q.type==='choice')card.querySelectorAll('.option').forEach(b=>b.addEventListener('click',()=>answerChoice(+b.dataset.idx)));
+  else {
+    document.getElementById('check').addEventListener('click',answerInput);
+    card.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')answerInput()}));
+  }
+  restoreState();renderQuickNav();
+  const first=card.querySelector('input:not(:disabled)');if(first&&!s.answered)setTimeout(()=>first.focus(),50);
+}
+function restoreState(){
+  const q=questions[i],s=state[i];
+  if(q.type==='choice'){
+    if(s.answered){
+      const bs=[...card.querySelectorAll('.option')];
+      bs.forEach((b,j)=>{b.disabled=true;if(j===q.correct)b.classList.add('correct')});
+      if(!s.ok&&s.value!=null)bs[s.value]?.classList.add('wrong');
+      feedbackView(s.ok,q.explanation);
+    }
+  } else if(q.type==='fill'){
+    const inp=document.getElementById('single');if(s.value)inp.value=s.value;
+    if(s.answered){
+      inp.disabled=true;inp.classList.add(s.ok?'good':'bad');document.getElementById('check').disabled=true;
+      feedbackView(s.ok,q.explanation+(s.ok?'':`<br><b>参考答案：</b>${q.answers[0]}`));
+    }
+  } else {
+    const inputs=[...card.querySelectorAll('input[data-field]')];if(s.values)inputs.forEach((inp,idx)=>inp.value=s.values[idx]||'');
+    if(s.answered){
+      inputs.forEach((inp,idx)=>{const f=q.fields[idx],ok=f.answers.some(a=>norm(a)===norm(inp.value));inp.disabled=true;inp.classList.add(ok?'good':'bad')});
+      document.getElementById('check').disabled=true;
+      const correct=q.fields.map(f=>`${f.label} = ${f.answers[0]}`);
+      feedbackView(s.ok,q.explanation+(s.ok?'':`<br><b>参考：</b><br>${correct.join('<br>')}`));
+    }
+  }
+}
+function answerChoice(idx){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  s.value=idx;markAnswered(idx===q.correct);render();
+}
+function answerInput(){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  if(q.type==='fill'){
+    const inp=document.getElementById('single');if(!inp.value.trim())return;
+    s.value=inp.value;markAnswered(q.answers.some(a=>norm(a)===norm(inp.value)));render();
+  } else {
+    const inputs=[...card.querySelectorAll('input[data-field]')];if(inputs.some(x=>!x.value.trim()))return;
+    s.values=inputs.map(x=>x.value);let all=true;
+    inputs.forEach((inp,idx)=>{if(!q.fields[idx].answers.some(a=>norm(a)===norm(inp.value)))all=false});
+    markAnswered(all);render();
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
+  if(e.key==='ArrowLeft')goTo(i-1);if(e.key==='ArrowRight')goTo(i+1);
+});
+render();
+</script>
+</body></html>

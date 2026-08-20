@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comparativo · 儿童趣味闯关</title>
+<style>
+:root {
+  --bg:#f8f7fb; --card:#fff; --text:#1d2939; --muted:#667085; --line:#e4e7ec;
+  --good:#18794e; --goodbg:#eaf7f0; --bad:#b42318; --badbg:#fff0ee; --accent:#5b5bd6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:860px;margin:auto;padding:22px 14px 50px}
+.top{background:white;border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:14px}
+h1{font-size:24px;margin:0 0 6px} .sub{color:var(--muted);font-size:14px;line-height:1.65}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:14px}
+.counter{font-weight:850} .stars{font-size:21px;letter-spacing:2px}
+.progress{height:10px;background:#ececf3;border-radius:999px;overflow:hidden}
+.bar{height:100%;background:var(--accent);width:0;transition:.25s}
+.quicknav-wrap{margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}
+.quicknav-title{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:13px;color:var(--muted);font-weight:800}
+.quicknav{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.qnum{flex:0 0 38px;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;font-weight:850;cursor:pointer}
+.qnum.current{border-color:var(--accent);box-shadow:0 0 0 2px rgba(91,91,214,.12)}
+.qnum.done{background:var(--goodbg);border-color:var(--good)} .qnum.wrong{background:var(--badbg);border-color:var(--bad)}
+.card{background:white;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 9px 30px rgba(16,24,40,.06)}
+.mode{font-size:14px;font-weight:900;color:var(--accent);margin-bottom:14px}
+.sentence-label{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:5px}
+.sentence{font-size:25px;line-height:1.55;font-weight:850;margin-bottom:24px;padding:14px 16px;border-radius:14px;background:#fafaff}
+.ask{font-size:18px;font-weight:800;line-height:1.65;margin-bottom:18px}
+.note{font-size:14px;color:var(--muted);margin:-6px 0 16px;line-height:1.5}
+.options{display:grid;gap:14px}
+.option{display:flex;align-items:flex-start;gap:24px;width:100%;border:1.5px solid var(--line);background:white;border-radius:15px;padding:17px 20px;text-align:left;cursor:pointer;font-size:17px;line-height:1.6}
+.option:hover{border-color:#b8b8df} .option:disabled{cursor:default}
+.letter{flex:0 0 44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;background:#f0f0fb;font-size:18px}
+.answertext{flex:1;padding-top:7px}
+.option.correct{background:var(--goodbg);border-color:var(--good)} .option.correct .letter{background:var(--good);color:#fff}
+.option.wrong{background:var(--badbg);border-color:var(--bad)} .option.wrong .letter{background:var(--bad);color:#fff}
+.fieldgrid{display:grid;gap:14px}
+.field{display:grid;grid-template-columns:minmax(190px,.8fr) 1.2fr;gap:14px;align-items:center}
+.field label{font-weight:850;line-height:1.4}
+input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:14px 15px;font-size:17px;outline:none}
+input:focus{border-color:var(--accent)} input.good{border-color:var(--good);background:var(--goodbg)} input.bad{border-color:var(--bad);background:var(--badbg)}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button.primary{border:0;background:var(--accent);color:white;border-radius:12px;padding:13px 18px;font-weight:850;font-size:15px;cursor:pointer}
+button.secondary{border:1.5px solid var(--line);background:#fff;color:var(--text);border-radius:12px;padding:13px 18px;font-weight:850;font-size:15px;cursor:pointer}
+button.secondary:disabled{opacity:.45;cursor:default}
+.feedback{display:none;margin-top:18px;border-radius:13px;padding:15px 16px;line-height:1.65}
+.feedback.good{display:block;background:var(--goodbg);color:var(--good)} .feedback.bad{display:block;background:var(--badbg);color:var(--bad)}
+.navbar{display:flex;gap:10px;margin-top:18px} .navbar button{flex:1}
+.progress-note{font-size:13px;color:var(--muted);margin-top:8px;text-align:right}
+.result{text-align:center} .score{font-size:54px;font-weight:900;margin:8px 0}
+.review{display:grid;gap:12px;margin-top:24px;text-align:left} .reviewitem{border:1px solid var(--line);border-radius:12px;padding:14px}
+.spark{position:fixed;pointer-events:none;font-size:26px;animation:pop .8s ease-out forwards}
+@keyframes pop{0%{transform:translateY(0) scale(.6);opacity:1}100%{transform:translateY(-70px) scale(1.3);opacity:0}}
+@media(max-width:620px){
+  .card{padding:20px} .sentence{font-size:21px} .field{grid-template-columns:1fr}
+  .option{gap:18px} .letter{flex-basis:40px;height:40px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Comparativo · 儿童趣味闯关</h1>
+    <div class="sub">più / meno / come 从基础开始，混合选择和填空；难题也保持初学者能做。</div>
+    <div class="row"><div class="counter" id="counter"></div><div class="stars" id="stars">☆ ☆ ☆</div></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+  <div class="quicknav-wrap">
+    <div class="quicknav-title"><span>快速浏览 · 点题号直接跳转</span><span id="doneCount">已答 0</span></div>
+    <div class="quicknav" id="quicknav"></div>
+  </div>
+  <main class="card" id="card"></main>
+</div>
+<script>
+const questions=[{"type": "choice", "topic": "热身 · 认一认", "prompt": "Luca è più alto di Marco.", "question": "这是哪一种比较？", "options": ["Comparativo di maggioranza 更……", "Comparativo di minoranza 更不……", "Comparativo di uguaglianza 一样……", "Positivo 普通形容"], "correct": 0, "explanation": "più + 形容词 + di = comparativo di maggioranza。"}, {"type": "choice", "topic": "热身 · 认一认", "prompt": "Il gatto è meno veloce del ghepardo.", "question": "这是哪一种比较？", "options": ["Comparativo di maggioranza", "Comparativo di minoranza", "Comparativo di uguaglianza", "Positivo"], "correct": 1, "explanation": "meno + 形容词 + di = comparativo di minoranza。"}, {"type": "choice", "topic": "热身 · 认一认", "prompt": "Fatima è simpatica come Antonella.", "question": "这是哪一种比较？", "options": ["Comparativo di maggioranza", "Comparativo di minoranza", "Comparativo di uguaglianza", "Positivo"], "correct": 2, "explanation": "形容词 + come = “和……一样……”。"}, {"type": "choice", "topic": "找普通形 · Positivo", "prompt": "Il papà è severo.", "question": "severo 是什么级？", "options": ["Positivo", "Comparativo di maggioranza", "Comparativo di minoranza", "Comparativo di uguaglianza"], "correct": 0, "explanation": "没有比较对象，也没有 più / meno / come，所以是 positivo。"}, {"type": "fill", "topic": "填一词 · più", "prompt": "La tua barzelletta è □ divertente della mia.", "question": "填入表示“更……”的词。", "answers": ["più"], "inputLabel": "要填的词", "explanation": "più divertente = 更有趣。"}, {"type": "fill", "topic": "填一词 · meno", "prompt": "La mia chitarra è □ nuova della tua.", "question": "填入表示“较不……”的词。", "answers": ["meno"], "inputLabel": "要填的词", "explanation": "meno nuova = 没那么新。"}, {"type": "fill", "topic": "填一词 · come", "prompt": "La mia cartella è pesante □ la tua.", "question": "填入表示“一样……”的词。", "answers": ["come"], "inputLabel": "要填的词", "explanation": "pesante come = 一样重。"}, {"type": "pairfill", "topic": "双格挑战 · 比较结构", "prompt": "Luca è □ preciso □ Giovanni.", "question": "填两个词，组成“Luca 比 Giovanni 更准确”。", "fields": [{"label": "第一个词", "answers": ["più"]}, {"label": "第二个词", "answers": ["di"]}], "explanation": "più preciso di Giovanni。"}, {"type": "pairfill", "topic": "双格挑战 · 比较结构", "prompt": "Il gatto è □ veloce □ ghepardo.", "question": "填两个词，组成“猫没有猎豹那么快”。", "fields": [{"label": "第一个词", "answers": ["meno"]}, {"label": "第二个词", "answers": ["del"]}], "explanation": "meno veloce del ghepardo。"}, {"type": "choice", "topic": "找关键词 · come", "prompt": "Sara è gentile come Giulia.", "question": "哪个词告诉你这是“相等比较”？", "options": ["Sara", "gentile", "come", "Giulia"], "correct": 2, "explanation": "come 是最明显的提示词。"}, {"type": "choice", "topic": "句子拼图 · 选正确", "prompt": "Paolo / alto / Marco", "question": "哪一句表示“Paolo 比 Marco 高”？", "options": ["Paolo è più alto di Marco.", "Paolo è meno alto di Marco.", "Paolo è alto come Marco.", "Paolo è alto Marco."], "correct": 0, "explanation": "“比……更高”用 più alto di。"}, {"type": "choice", "topic": "句子拼图 · 选正确", "prompt": "Anna / veloce / Marta", "question": "哪一句表示“Anna 和 Marta 一样快”？", "options": ["Anna è più veloce di Marta.", "Anna è meno veloce di Marta.", "Anna è veloce come Marta.", "Anna è veloce di Marta."], "correct": 2, "explanation": "“一样快”用 veloce come。"}, {"type": "fill", "topic": "基础加固 · 自己写关键词", "prompt": "Questa torta è □ dolce di quella.", "question": "如果要表达“更甜”，填什么？", "answers": ["più"], "inputLabel": "关键词", "explanation": "更甜 = più dolce。"}, {"type": "choice", "topic": "小陷阱 · 谁更重？", "prompt": "La valigia A è più pesante della valigia B.", "question": "哪一个更重？", "options": ["La valigia A", "La valigia B", "一样重", "句子没有说明"], "correct": 0, "explanation": "più pesante della valigia B = A 比 B 更重。"}, {"type": "choice", "topic": "小陷阱 · 谁更年轻？", "prompt": "Marco è meno giovane di Luca.", "question": "谁更年轻？", "options": ["Luca", "Marco", "一样年轻", "无法判断"], "correct": 0, "explanation": "Marco meno giovane di Luca = Marco 没 Luca 年轻，所以 Luca 更年轻。"}, {"type": "fill", "topic": "难一点点 · 完整比较", "prompt": "Il treno è □ veloce dell’autobus.", "question": "填入“更……”的词。", "answers": ["più"], "inputLabel": "关键词", "explanation": "Il treno è più veloce dell’autobus = 火车比公交车更快。"}, {"type": "choice", "topic": "判断结构 · quale?", "prompt": "Ho visto un film divertente.", "question": "divertente 是什么级？", "options": ["Positivo", "Comparativo di maggioranza", "Comparativo di minoranza", "Comparativo di uguaglianza"], "correct": 0, "explanation": "只是描述“有趣”，没有比较。"}, {"type": "fill", "topic": "最后一关 · 自己完成", "prompt": "Mia sorella è □ alta come me.", "question": "若要表达“和我一样高”，空格里通常填什么？", "answers": ["tanto", "così"], "inputLabel": "可用的词", "explanation": "完整形式可以是 tanto alta come me；口语和教材里也常直接说 alta come me。"}];
+let i=0, streak=0;
+const state=questions.map(()=>({answered:false,ok:null,value:null,values:null}));
+const card=document.getElementById('card'),counter=document.getElementById('counter'),bar=document.getElementById('bar'),stars=document.getElementById('stars'),quicknav=document.getElementById('quicknav'),doneCount=document.getElementById('doneCount');
+
+function norm(s){
+  return s.trim().toLowerCase()
+    .replace(/[’‘]/g,"'")
+    .replace(/\s+/g," ")
+    .replace(/[。.!！?？]+$/,"");
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function answeredNow(){return state.filter(x=>x.answered).length}
+function starView(){stars.textContent=streak>=3?'★ ★ ★':streak===2?'★ ★ ☆':streak===1?'★ ☆ ☆':'☆ ☆ ☆'}
+function celebrate(){
+  const chars=['⭐','✨','🌟'];
+  for(let k=0;k<7;k++){
+    const d=document.createElement('div');d.className='spark';d.textContent=chars[k%chars.length];
+    d.style.left=(45+Math.random()*20)+'vw';d.style.top=(45+Math.random()*10)+'vh';
+    document.body.appendChild(d);setTimeout(()=>d.remove(),850);
+  }
+}
+function sentenceBlock(q){
+  return `<div class="sentence-label">${q.sentenceLabel||'Frase 句子'}</div><div class="sentence">${q.prompt}</div>`;
+}
+function renderQuickNav(){
+  quicknav.innerHTML=questions.map((_,idx)=>{
+    const s=state[idx], cls=['qnum'];
+    if(idx===i)cls.push('current'); if(s.answered)cls.push(s.ok?'done':'wrong');
+    return `<button class="${cls.join(' ')}" data-jump="${idx}">${idx+1}</button>`;
+  }).join('');
+  quicknav.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>goTo(+b.dataset.jump)));
+  doneCount.textContent=`已答 ${answeredNow()} / ${questions.length}`;
+  const cur=quicknav.querySelector(`[data-jump="${i}"]`);if(cur)cur.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+function saveDraft(){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  if(q.type==='fill'){const inp=document.getElementById('single');if(inp)s.value=inp.value}
+  else if(q.type!=='choice'){const inputs=[...card.querySelectorAll('input[data-field]')];if(inputs.length)s.values=inputs.map(x=>x.value)}
+}
+function goTo(idx){if(idx<0||idx>=questions.length)return;saveDraft();i=idx;render()}
+function feedbackView(ok,text){
+  const fb=document.getElementById('fb');fb.className='feedback '+(ok?'good':'bad');
+  fb.innerHTML=`<strong>${ok?'✓ 太棒了！':'✗ 再看一眼'}</strong><br>${text}`;
+}
+function markAnswered(ok){
+  const s=state[i];if(!s.answered){s.answered=true;s.ok=ok;streak=ok?streak+1:0;starView();if(ok)celebrate()}
+  renderQuickNav();
+}
+function render(){
+  const q=questions[i],s=state[i];
+  counter.textContent=`第 ${i+1} 题 / 共 ${questions.length} 题`;
+  bar.style.width=`${((i+1)/questions.length)*100}%`;
+  let body=`<div class="mode">${q.topic}</div>${sentenceBlock(q)}`;
+  if(q.question)body+=`<div class="ask">${q.question}</div>`;
+  if(q.note)body+=`<div class="note">${q.note}</div>`;
+
+  if(q.type==='choice'){
+    body+=`<div class="options">`+q.options.map((o,idx)=>`<button class="option" data-idx="${idx}"><span class="letter">${String.fromCharCode(65+idx)}</span><span class="answertext">${o}</span></button>`).join('')+`</div>`;
+  } else if(q.type==='fill'){
+    body+=`<div class="fieldgrid"><div class="field"><label>${q.inputLabel||'你的答案'}</label><input id="single" autocomplete="off" placeholder="${q.placeholder||'在这里写答案'}"></div></div><div class="actions"><button class="primary" id="check">检查答案</button></div>`;
+  } else {
+    body+=`<div class="fieldgrid">`+q.fields.map((f,idx)=>`<div class="field"><label>${f.label}</label><input data-field="${idx}" autocomplete="off" placeholder="${f.placeholder||'写在这里'}"></div>`).join('')+`</div><div class="actions"><button class="primary" id="check">全部检查</button></div>`;
+  }
+
+  body+=`<div class="feedback" id="fb"></div>
+  <div class="navbar"><button class="secondary" id="prev" ${i===0?'disabled':''}>← 上一题</button><button class="secondary" id="next" ${i===questions.length-1?'disabled':''}>下一题 →</button></div>
+  <div class="progress-note">不用做完也可以随时前后跳题</div>`;
+  card.innerHTML=body;
+
+  document.getElementById('prev').addEventListener('click',()=>goTo(i-1));
+  document.getElementById('next').addEventListener('click',()=>goTo(i+1));
+  if(q.type==='choice')card.querySelectorAll('.option').forEach(b=>b.addEventListener('click',()=>answerChoice(+b.dataset.idx)));
+  else {
+    document.getElementById('check').addEventListener('click',answerInput);
+    card.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')answerInput()}));
+  }
+  restoreState();renderQuickNav();
+  const first=card.querySelector('input:not(:disabled)');if(first&&!s.answered)setTimeout(()=>first.focus(),50);
+}
+function restoreState(){
+  const q=questions[i],s=state[i];
+  if(q.type==='choice'){
+    if(s.answered){
+      const bs=[...card.querySelectorAll('.option')];
+      bs.forEach((b,j)=>{b.disabled=true;if(j===q.correct)b.classList.add('correct')});
+      if(!s.ok&&s.value!=null)bs[s.value]?.classList.add('wrong');
+      feedbackView(s.ok,q.explanation);
+    }
+  } else if(q.type==='fill'){
+    const inp=document.getElementById('single');if(s.value)inp.value=s.value;
+    if(s.answered){
+      inp.disabled=true;inp.classList.add(s.ok?'good':'bad');document.getElementById('check').disabled=true;
+      feedbackView(s.ok,q.explanation+(s.ok?'':`<br><b>参考答案：</b>${q.answers[0]}`));
+    }
+  } else {
+    const inputs=[...card.querySelectorAll('input[data-field]')];if(s.values)inputs.forEach((inp,idx)=>inp.value=s.values[idx]||'');
+    if(s.answered){
+      inputs.forEach((inp,idx)=>{const f=q.fields[idx],ok=f.answers.some(a=>norm(a)===norm(inp.value));inp.disabled=true;inp.classList.add(ok?'good':'bad')});
+      document.getElementById('check').disabled=true;
+      const correct=q.fields.map(f=>`${f.label} = ${f.answers[0]}`);
+      feedbackView(s.ok,q.explanation+(s.ok?'':`<br><b>参考：</b><br>${correct.join('<br>')}`));
+    }
+  }
+}
+function answerChoice(idx){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  s.value=idx;markAnswered(idx===q.correct);render();
+}
+function answerInput(){
+  const q=questions[i],s=state[i];if(s.answered)return;
+  if(q.type==='fill'){
+    const inp=document.getElementById('single');if(!inp.value.trim())return;
+    s.value=inp.value;markAnswered(q.answers.some(a=>norm(a)===norm(inp.value)));render();
+  } else {
+    const inputs=[...card.querySelectorAll('input[data-field]')];if(inputs.some(x=>!x.value.trim()))return;
+    s.values=inputs.map(x=>x.value);let all=true;
+    inputs.forEach((inp,idx)=>{if(!q.fields[idx].answers.some(a=>norm(a)===norm(inp.value)))all=false});
+    markAnswered(all);render();
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
+  if(e.key==='ArrowLeft')goTo(i-1);if(e.key==='ArrowRight')goTo(i+1);
+});
+render();
+</script>
+</body></html>
